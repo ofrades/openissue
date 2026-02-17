@@ -1,6 +1,6 @@
 {
   "name": "openissue",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TUI app for managing GitHub/GitLab issues with slash commands and file references",
   "module": "src/index.tsx",
   "type": "module",
