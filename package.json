@@ -1,0 +1,26 @@
+{
+  "name": "opengit",
+  "version": "0.1.0",
+  "description": "TUI app for managing GitHub/GitLab issues with slash commands and file references",
+  "module": "src/index.tsx",
+  "type": "module",
+  "bin": {
+    "opengit": "./bin/opengit"
+  },
+  "scripts": {
+    "dev": "bun run src/index.tsx",
+    "build": "bun run build.ts",
+    "start": "bun run src/index.tsx"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@opentui/core": "^0.1.79",
+    "@opentui/solid": "^0.1.79",
+    "solid-js": "^1.9.11"
+  }
+}
