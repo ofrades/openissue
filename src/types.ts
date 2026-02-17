@@ -1,4 +1,4 @@
-// Issue and store types for opengit
+// Issue and store types for openissue
 
 export interface FileRef {
   path: string

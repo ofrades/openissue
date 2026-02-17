@@ -8,8 +8,8 @@ import { resolve } from "node:path"
 async function main() {
   const cwd = process.cwd()
 
-  // Ensure .opengit directory exists
-  const dir = resolve(cwd, ".opengit")
+  // Ensure .openissue directory exists
+  const dir = resolve(cwd, ".openissue")
   try {
     await Bun.write(resolve(dir, ".gitkeep"), "")
   } catch {
@@ -35,6 +35,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error("opengit error:", err)
+  console.error("openissue error:", err)
   process.exit(1)
 })

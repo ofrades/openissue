@@ -1,7 +1,7 @@
 import type { Issue, IssueStore } from "../types.ts"
 import { resolve } from "node:path"
 
-const STORE_FILE = ".opengit/issues.json"
+const STORE_FILE = ".openissue/issues.json"
 
 export function createStore(cwd: string): IssueStore {
   const filePath = resolve(cwd, STORE_FILE)
@@ -31,7 +31,7 @@ export function createStore(cwd: string): IssueStore {
     },
 
     async save() {
-      const dir = resolve(cwd, ".opengit")
+      const dir = resolve(cwd, ".openissue")
       await Bun.write(resolve(dir, ".gitkeep"), "")
       await Bun.write(filePath, JSON.stringify(issues, null, 2))
     },

@@ -687,7 +687,7 @@ export function App(props: { state: AppState; cwd: string }) {
 
   async function saveImage(bytes: Uint8Array, extension: string) {
     try {
-      const dir = resolve(props.cwd, ".opengit", "images");
+      const dir = resolve(props.cwd, ".openissue", "images");
       await mkdir(dir, { recursive: true });
       const filename = `paste-${Date.now()}.${extension}`;
       const filePath = resolve(dir, filename);

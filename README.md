@@ -7,13 +7,13 @@ Inspired by [OpenCode](https://opencode.ai) design. Built with [OpenTUI](https:/
 ## Install
 
 ```bash
-bun install -g openissue
+bun install -g github:ofrades/openissue
 ```
 
 Or clone and run locally:
 
 ```bash
-git clone <repo-url> && cd opengit
+git clone https://github.com/ofrades/openissue.git && cd openissue
 bun install
 bun run dev
 ```
@@ -71,7 +71,7 @@ q → Quit
 
 ## Storage
 
-Issues are stored locally in `.opengit/issues.json`:
+Issues are stored locally in `.openissue/issues.json`:
 
 ```json
 [
