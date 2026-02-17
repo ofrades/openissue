@@ -65,3 +65,4 @@ git push --no-verify
 - Subsequent pushes will bump automatically
 # Test push to trigger version bump
 test push with version bump
+# More testing
