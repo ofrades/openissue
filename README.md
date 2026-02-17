@@ -1,4 +1,4 @@
-# 🐛 openissue
+# 📋️ openissue
 
 Minimal TUI issue tracker for GitHub and GitLab. Create, edit, and view issues with comments from your terminal.
 
