@@ -1,0 +1,15 @@
+[
+  {
+    "id": "gh-3",
+    "title": "show list of running agents",
+    "body": "we should show the list of running agents if we press tab in the issues list\n\nthe issues list will switch to the agents list\n\ntab will toggle between issues list and agents list",
+    "status": "open",
+    "priority": "medium",
+    "labels": [],
+    "files": [],
+    "remoteNumber": 3,
+    "provider": "github",
+    "createdAt": "2026-02-17T18:34:19Z",
+    "updatedAt": "2026-02-17T18:34:19Z"
+  }
+]

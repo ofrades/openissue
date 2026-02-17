@@ -32,10 +32,12 @@
     "dev": "bun run src/index.tsx",
     "build": "bun run build.ts",
     "start": "bun run src/index.tsx",
-    "prepare": "bun run build"
+    "prepare": "bun run build",
+    "release": "release-it"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "release-it": "^19.2.4"
   },
   "peerDependencies": {
     "typescript": "^5"

@@ -1,0 +1,22 @@
+{
+  "git": {
+    "commitMessage": "chore: bump version to ${version}",
+    "requireCleanWorkingDir": true,
+    "requireUpstream": false,
+    "push": true,
+    "pushArgs": [],
+    "tag": true,
+    "tagName": "v${version}",
+    "tagAnnotation": "Release v${version}"
+  },
+  "github": {
+    "release": false,
+    "skipChecks": true
+  },
+  "npm": {
+    "publish": false
+  },
+  "hooks": {
+    "before:init": []
+  }
+}
