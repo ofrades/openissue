@@ -67,3 +67,27 @@ export interface IssueStore {
   save(): Promise<void>
   load(): Promise<void>
 }
+
+// Agent types for GitHub Copilot agent tasks
+export type AgentTaskStatus = "draft" | "in_progress" | "completed" | "failed"
+
+export interface AgentTask {
+  id: string // session ID
+  title: string // task description
+  pullRequestNumber?: number
+  repository: string
+  status: AgentTaskStatus
+  createdAt: string
+  updatedAt?: string
+}
+
+export interface AgentTaskStore {
+  tasks: AgentTask[]
+  add(task: AgentTask): void
+  update(id: string, patch: Partial<AgentTask>): void
+  remove(id: string): void
+  get(id: string): AgentTask | undefined
+  getByPR(prNumber: number): AgentTask[]
+  save(): Promise<void>
+  load(): Promise<void>
+}

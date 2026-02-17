@@ -9,6 +9,7 @@ import type {
 } from "@opentui/core";
 import type { AppState } from "./state.ts";
 import type { Issue, Comment } from "../types.ts";
+import { createAgentTaskProvider } from "../provider/agents.ts";
 import { randomUUID } from "node:crypto";
 import { findFiles } from "../store/files.ts";
 import { resolve } from "node:path";
@@ -18,6 +19,7 @@ export function App(props: { state: AppState; cwd: string }) {
   const [message, setMessage] = createSignal("");
   const [shouldExit, setShouldExit] = createSignal(false);
   const [mode, setMode] = createSignal<"list" | "read" | "edit">("list");
+  const [viewMode, setViewMode] = createSignal<"issues" | "agents">("issues");
   const [selectedIndex, setSelectedIndex] = createSignal(0);
   const [editingId, setEditingId] = createSignal<string | null>(null);
   const [readingId, setReadingId] = createSignal<string | null>(null);
@@ -32,6 +34,11 @@ export function App(props: { state: AppState; cwd: string }) {
   const [issueSuggestions, setIssueSuggestions] = createSignal<Issue[]>([]);
   const [suggestionIndex, setSuggestionIndex] = createSignal(0);
   const [comments, setComments] = createSignal<Comment[]>([]);
+  const [showAgentModal, setShowAgentModal] = createSignal(false);
+  const [agentModalIssue, setAgentModalIssue] = createSignal<Issue | null>(
+    null,
+  );
+  const [agentInstructions, setAgentInstructions] = createSignal("");
   let suggestionSeq = 0;
 
   const colors = {
@@ -88,6 +95,7 @@ export function App(props: { state: AppState; cwd: string }) {
 
   let titleInput: InputRenderable | undefined;
   let descTextarea: TextareaRenderable | undefined;
+  let agentModalTextarea: TextareaRenderable | undefined;
   const renderer = useRenderer();
 
   const provider = props.state.provider();
@@ -107,6 +115,33 @@ export function App(props: { state: AppState; cwd: string }) {
         name: ` ${status} ${issueId.padEnd(12)} ${trimmedTitle} `,
         description: "",
         value: issue.id,
+      };
+    }),
+  );
+
+  const agentTasks = createMemo(() => props.state.agentTasks());
+  const agentTaskOptions = createMemo(() =>
+    agentTasks().map((task) => {
+      const statusIcon =
+        task.status === "draft"
+          ? "○"
+          : task.status === "in_progress"
+            ? "◐"
+            : task.status === "completed"
+              ? "●"
+              : "✗";
+      const prId = task.pullRequestNumber
+        ? `#${task.pullRequestNumber}`
+        : "draft";
+      const maxTitleLength = 50;
+      const trimmedTitle =
+        task.title.length > maxTitleLength
+          ? `${task.title.slice(0, maxTitleLength).trimEnd()}...`
+          : task.title;
+      return {
+        name: ` ${statusIcon} ${prId.padEnd(12)} ${trimmedTitle} `,
+        description: "",
+        value: task.id,
       };
     }),
   );
@@ -130,6 +165,32 @@ export function App(props: { state: AppState; cwd: string }) {
       closed,
       synced,
       local: total - synced,
+    };
+  });
+
+  const agentStats = createMemo(() => {
+    const list = agentTasks();
+    let active = 0;
+    let completed = 0;
+    let failed = 0;
+    let draft = 0;
+    list.forEach((task) => {
+      if (task.status === "in_progress") {
+        active += 1;
+      } else if (task.status === "draft") {
+        draft += 1;
+      } else if (task.status === "completed") {
+        completed += 1;
+      } else if (task.status === "failed") {
+        failed += 1;
+      }
+    });
+    return {
+      total: list.length,
+      active,
+      completed,
+      failed,
+      draft,
     };
   });
   const suggestionOptions = createMemo(() => {
@@ -201,6 +262,61 @@ export function App(props: { state: AppState; cwd: string }) {
 
   useKeyboard((key) => {
     const keyName = key.name.toLowerCase();
+
+    // Handle agent task creation modal
+    if (showAgentModal()) {
+      if (keyName === "escape") {
+        key.preventDefault();
+        setShowAgentModal(false);
+        setAgentModalIssue(null);
+        setAgentInstructions("");
+        return;
+      }
+      if (keyName === "return" || keyName === "enter") {
+        key.preventDefault();
+        const issue = agentModalIssue();
+        if (issue && provider) {
+          (async () => {
+            try {
+              setShowAgentModal(false);
+              setMessage("Creating agent task...");
+              const agentTaskProvider = createAgentTaskProvider(
+                provider.type,
+                provider.repo,
+              );
+
+              // Build description from issue + optional custom instructions
+              const customInstructions = agentModalTextarea?.plainText || "";
+              let description = `${issue.title}`;
+              if (customInstructions.trim()) {
+                description += `\n\n${customInstructions.trim()}`;
+              }
+              if (issue.body) {
+                description += `\n\n## Issue Description\n${issue.body}`;
+              }
+
+              const newTask = await agentTaskProvider.createAgentTask(
+                description,
+                issue.remoteNumber,
+              );
+              props.state.agentTaskStore.add(newTask);
+              await props.state.agentTaskStore.save();
+              setMessage(
+                `✓ Created agent task #${newTask.pullRequestNumber || "draft"} for issue #${issue.remoteNumber || issue.id.slice(0, 8)}`,
+              );
+              setAgentModalIssue(null);
+              setAgentInstructions("");
+            } catch (error) {
+              setMessage(`✗ Failed to create agent task: ${error}`);
+            }
+          })();
+        }
+        return;
+      }
+      // Don't handle other keys when modal is open
+      return;
+    }
+
     if (key.ctrl && key.name === "c") {
       renderer.destroy();
       return;
@@ -211,18 +327,108 @@ export function App(props: { state: AppState; cwd: string }) {
       return;
     }
 
+    // Toggle between issues and agents in list mode OR assign issue to agent
+    if (mode() === "list" && keyName === "a") {
+      key.preventDefault();
+      if (viewMode() === "issues") {
+        // If on issues view, open modal to create agent task from selected issue
+        const issue = selectedIssue();
+        if (issue) {
+          setAgentModalIssue(issue);
+          setAgentInstructions("");
+          setShowAgentModal(true);
+        } else {
+          // If no issue selected, toggle to agents view
+          setViewMode("agents");
+          setSelectedIndex(0);
+        }
+      } else {
+        // If on agents view, toggle back to issues
+        setViewMode("issues");
+        setSelectedIndex(0);
+      }
+      return;
+    }
+
+    // Tab key to toggle view mode quickly
+    if (mode() === "list" && keyName === "tab") {
+      key.preventDefault();
+      setViewMode(viewMode() === "issues" ? "agents" : "issues");
+      setSelectedIndex(0);
+      return;
+    }
+
     if (mode() === "read") {
       if (keyName === "escape" || keyName === "space") {
         key.preventDefault();
         setComments([]);
         setMode("list");
+      } else if (keyName === "a") {
+        // Assign issue to agent (create agent task)
+        key.preventDefault();
+        const issue = readingId() ? props.state.store.get(readingId()!) : null;
+        if (issue && provider) {
+          (async () => {
+            try {
+              setMessage("Creating agent task from issue...");
+              const agentTaskProvider = createAgentTaskProvider(
+                provider.type,
+                provider.repo,
+              );
+              const description = `${issue.title}\n\n${issue.body || ""}`;
+              const newTask = await agentTaskProvider.createAgentTask(
+                description,
+                issue.remoteNumber,
+              );
+              props.state.agentTaskStore.add(newTask);
+              await props.state.agentTaskStore.save();
+              setMessage(
+                `Created agent task #${newTask.pullRequestNumber || "draft"} for issue`,
+              );
+            } catch (error) {
+              setMessage(`Failed to create agent task: ${error}`);
+            }
+          })();
+        }
       }
       return;
     }
 
     if (mode() === "list" && keyName === "n") {
       key.preventDefault();
-      openNew();
+      if (viewMode() === "agents") {
+        // Create new agent task - show a simple prompt
+        // For now, let's just show a message that this needs implementation
+        setMessage("Creating agent task - type description and press enter");
+        // TODO: Add modal for task creation
+      } else {
+        openNew();
+      }
+      return;
+    }
+
+    if (mode() === "list" && keyName === "r") {
+      key.preventDefault();
+      if (viewMode() === "agents") {
+        // Refresh agent tasks
+        const provider = props.state.provider();
+        if (provider) {
+          (async () => {
+            try {
+              const agentTaskProvider = createAgentTaskProvider(
+                provider.type,
+                provider.repo,
+              );
+              const tasks = await agentTaskProvider.listAgentTasks();
+              props.state.setAgentTasks(tasks);
+              await props.state.agentTaskStore.save();
+              setMessage(`Refreshed ${tasks.length} agent tasks`);
+            } catch (error) {
+              setMessage(`Failed to refresh: ${error}`);
+            }
+          })();
+        }
+      }
       return;
     }
 
@@ -242,11 +448,36 @@ export function App(props: { state: AppState; cwd: string }) {
       (keyName === "enter" || keyName === "return" || keyName === "linefeed")
     ) {
       key.preventDefault();
-      const issue = selectedIssue();
-      if (issue) {
-        openEdit(issue);
+      if (viewMode() === "agents") {
+        // View agent task logs
+        const task = agentTasks()[selectedIndex()];
+        if (task) {
+          const provider = props.state.provider();
+          if (provider) {
+            (async () => {
+              try {
+                setMessage(`Fetching logs for ${task.title}...`);
+                const agentTaskProvider = createAgentTaskProvider(
+                  provider.type,
+                  provider.repo,
+                );
+                const logs = await agentTaskProvider.viewAgentTask(task.id);
+                setMessage(
+                  `Logs: ${logs.substring(0, 100)}... (${logs.length} chars total)`,
+                );
+              } catch (error) {
+                setMessage(`Failed to fetch logs: ${error}`);
+              }
+            })();
+          }
+        }
       } else {
-        openNew();
+        const issue = selectedIssue();
+        if (issue) {
+          openEdit(issue);
+        } else {
+          openNew();
+        }
       }
     }
 
@@ -730,10 +961,13 @@ export function App(props: { state: AppState; cwd: string }) {
 
   const hintText = () => {
     if (mode() === "list") {
-      return "n: new  up/down/j/k: nav  space: view  enter/e: edit  x: close  q: quit";
+      if (viewMode() === "agents") {
+        return "tab/a: issues  r: refresh  j/k: nav  enter: logs  q: quit";
+      }
+      return "n: new  a: assign  tab: agents  space: view  e: edit  x: close  q: quit";
     }
     if (mode() === "read") {
-      return "esc/q: back";
+      return "a: assign to agent  esc/q: back";
     }
     return "tab: navigate  enter: save  esc: cancel";
   };
@@ -750,6 +984,7 @@ export function App(props: { state: AppState; cwd: string }) {
     >
       <box
         width="100%"
+        height={3}
         flexDirection="row"
         justifyContent="space-between"
         alignItems="center"
@@ -788,45 +1023,104 @@ export function App(props: { state: AppState; cwd: string }) {
               paddingTop={1}
               paddingBottom={1}
             >
-              <box flexDirection="row" gap={3}>
-                <text
-                  fg={colors.textMuted}
-                  content={`Total ${stats().total}`}
-                />
-                <text fg={colors.primary} content={`Open ${stats().open}`} />
-                <text
-                  fg={colors.textMuted}
-                  content={`Closed ${stats().closed}`}
-                />
-              </box>
-              <box flexDirection="row" gap={3}>
-                <text
-                  fg={colors.textMuted}
-                  content={`Synced ${stats().synced}`}
-                />
-                <text
-                  fg={colors.textMuted}
-                  content={`Local ${stats().local}`}
-                />
-              </box>
+              {viewMode() === "issues" ? (
+                <>
+                  <box flexDirection="row" gap={3}>
+                    <text
+                      fg={colors.textMuted}
+                      content={`Total ${stats().total}`}
+                    />
+                    <text
+                      fg={colors.primary}
+                      content={`Open ${stats().open}`}
+                    />
+                    <text
+                      fg={colors.textMuted}
+                      content={`Closed ${stats().closed}`}
+                    />
+                  </box>
+                  <box flexDirection="row" gap={3}>
+                    <text
+                      fg={colors.textMuted}
+                      content={`Synced ${stats().synced}`}
+                    />
+                    <text
+                      fg={colors.textMuted}
+                      content={`Local ${stats().local}`}
+                    />
+                  </box>
+                </>
+              ) : (
+                <>
+                  <box flexDirection="row" gap={3}>
+                    <text
+                      fg={colors.textMuted}
+                      content={`Total ${agentStats().total}`}
+                    />
+                    <text
+                      fg={colors.primaryBright}
+                      content={`Active ${agentStats().active}`}
+                    />
+                    <text
+                      fg={colors.primary}
+                      content={`Done ${agentStats().completed}`}
+                    />
+                  </box>
+                  <box flexDirection="row" gap={3}>
+                    <text
+                      fg={colors.textDim}
+                      content={`Failed ${agentStats().failed}`}
+                    />
+                    <text
+                      fg={colors.textMuted}
+                      content={`Draft ${agentStats().draft}`}
+                    />
+                  </box>
+                </>
+              )}
             </box>
-            {message() && (
-              <box height={1} paddingLeft={2} paddingBottom={1}>
-                <text fg={colors.primary} content={message()} />
-              </box>
-            )}
-            {issueOptions().length === 0 ? (
+            <box height={1} paddingLeft={2}>
+              {message() && <text fg={colors.primary} content={message()} />}
+            </box>
+            {viewMode() === "issues" ? (
+              issueOptions().length === 0 ? (
+                <box paddingLeft={2} paddingTop={2}>
+                  <text
+                    fg={colors.textDim}
+                    content="No todos yet. Press 'n' to create one."
+                  />
+                </box>
+              ) : (
+                <select
+                  width="100%"
+                  height="100%"
+                  options={issueOptions()}
+                  selectedIndex={selectedIndex()}
+                  showScrollIndicator
+                  focused
+                  backgroundColor="transparent"
+                  selectedBackgroundColor={colors.primary}
+                  textColor={colors.textStrong}
+                  selectedTextColor={colors.highlight}
+                  onChange={(index) => setSelectedIndex(index)}
+                  onSelect={(index) => {
+                    const issue = issues()[index];
+                    if (issue) openEdit(issue);
+                  }}
+                />
+              )
+            ) : agentTaskOptions().length === 0 ? (
               <box paddingLeft={2} paddingTop={2}>
                 <text
                   fg={colors.textDim}
-                  content="No todos yet. Press 'n' to create one."
+                  content="No agent tasks yet. Press 'n' to create one or 'r' to refresh."
                 />
               </box>
             ) : (
               <select
                 width="100%"
                 height="100%"
-                options={issueOptions()}
+                options={agentTaskOptions()}
                 selectedIndex={selectedIndex()}
                 showScrollIndicator
                 focused
@@ -836,8 +1130,30 @@ export function App(props: { state: AppState; cwd: string }) {
                 selectedTextColor={colors.highlight}
                 onChange={(index) => setSelectedIndex(index)}
                 onSelect={(index) => {
-                  const issue = issues()[index];
-                  if (issue) openEdit(issue);
+                  // View logs for selected agent task
+                  const task = agentTasks()[index];
+                  if (task) {
+                    const provider = props.state.provider();
+                    if (provider) {
+                      (async () => {
+                        try {
+                          setMessage(`Fetching logs for ${task.title}...`);
+                          const agentTaskProvider = createAgentTaskProvider(
+                            provider.type,
+                            provider.repo,
+                          );
+                          const logs = await agentTaskProvider.viewAgentTask(
+                            task.id,
+                          );
+                          setMessage(
+                            `Logs: ${logs.substring(0, 100)}... (${logs.length} chars total)`,
+                          );
+                        } catch (error) {
+                          setMessage(`Failed to fetch logs: ${error}`);
+                        }
+                      })();
+                    }
+                  }
                 }}
               />
             )}
@@ -1035,6 +1351,72 @@ export function App(props: { state: AppState; cwd: string }) {
           </box>
         )}
       </box>
+
+      {/* Agent Task Creation Modal */}
+      {showAgentModal() && (
+        <box
+          position="absolute"
+          top={6}
+          left={10}
+          right={10}
+          borderStyle="single"
+          borderColor={colors.primary}
+          backgroundColor={colors.panel}
+          flexDirection="column"
+          padding={2}
+          gap={1}
+          zIndex={1000}
+        >
+          <text
+            fg={colors.primary}
+            attributes={TextAttributes.BOLD}
+            content={`Create Agent Task from Issue`}
+          />
+
+          <box height={3} marginTop={1} marginBottom={1}>
+            <text
+              fg={colors.textMuted}
+              content={`Issue: #${agentModalIssue()?.remoteNumber || agentModalIssue()?.id.slice(0, 8)} - ${agentModalIssue()?.title}`}
+              wrapMode="word"
+            />
+          </box>
+
+          <box
+            height={8}
+            borderStyle="single"
+            borderColor={colors.border}
+            backgroundColor={colors.panelInset}
+            padding={1}
+          >
+            <textarea
+              ref={(renderable) => {
+                agentModalTextarea = renderable;
+                if (!renderable) return;
+                if (renderable.plainText !== agentInstructions()) {
+                  renderable.setText(agentInstructions());
+                }
+              }}
+              flexGrow={1}
+              placeholder="Optional: Add custom instructions for the agent..."
+              textColor={colors.text}
+              cursorColor={colors.primary}
+              backgroundColor="transparent"
+              focusedBackgroundColor="transparent"
+              placeholderColor={colors.textDim}
+              wrapMode="word"
+              focused
+              onContentChange={() => {
+                setAgentInstructions(agentModalTextarea?.plainText || "");
+              }}
+            />
+          </box>
+
+          <box marginTop={1} flexDirection="row" gap={2}>
+            <text fg={colors.textDim} content="enter: create" />
+            <text fg={colors.textDim} content="esc: cancel" />
+          </box>
+        </box>
+      )}
     </box>
   );
 }

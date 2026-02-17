@@ -1,18 +1,26 @@
 import { createSignal, type Accessor, type Setter } from "solid-js"
-import type { IssueStore, GitProvider, Issue } from "../types.ts"
+import type { IssueStore, GitProvider, Issue, AgentTaskStore, AgentTask } from "../types.ts"
 
 export interface AppState {
   issues: Accessor<Issue[]>
   setIssues: Setter<Issue[]>
+  agentTasks: Accessor<AgentTask[]>
+  setAgentTasks: Setter<AgentTask[]>
   messages: Accessor<string[]>
   addMessage: (msg: string) => void
   provider: Accessor<GitProvider | null>
   providerLabel: Accessor<string>
   store: IssueStore
+  agentTaskStore: AgentTaskStore
 }
 
-export function createAppState(store: IssueStore, provider: GitProvider | null): AppState {
+export function createAppState(
+  store: IssueStore, 
+  agentTaskStore: AgentTaskStore,
+  provider: GitProvider | null
+): AppState {
   const [issues, setIssues] = createSignal<Issue[]>(store.issues)
+  const [agentTasks, setAgentTasks] = createSignal<AgentTask[]>(agentTaskStore.tasks)
   const [messages, setMessages] = createSignal<string[]>([
     "Welcome to opentask.",
   ])
@@ -30,6 +38,10 @@ export function createAppState(store: IssueStore, provider: GitProvider | null):
 
   function refreshIssues() {
     setIssues([...store.issues])
+  }
+
+  function refreshAgentTasks() {
+    setAgentTasks([...agentTaskStore.tasks])
   }
 
   // Monkey-patch store to auto-refresh signals
@@ -50,13 +62,34 @@ export function createAppState(store: IssueStore, provider: GitProvider | null):
     refreshIssues()
   }
 
+  // Monkey-patch agent task store
+  const origTaskAdd = agentTaskStore.add.bind(agentTaskStore)
+  const origTaskUpdate = agentTaskStore.update.bind(agentTaskStore)
+  const origTaskRemove = agentTaskStore.remove.bind(agentTaskStore)
+
+  agentTaskStore.add = (task: AgentTask) => {
+    origTaskAdd(task)
+    refreshAgentTasks()
+  }
+  agentTaskStore.update = (id: string, patch: Partial<AgentTask>) => {
+    origTaskUpdate(id, patch)
+    refreshAgentTasks()
+  }
+  agentTaskStore.remove = (id: string) => {
+    origTaskRemove(id)
+    refreshAgentTasks()
+  }
+
   return {
     issues,
     setIssues,
+    agentTasks,
+    setAgentTasks,
     messages,
     addMessage,
     provider: providerSignal,
     providerLabel,
     store,
+    agentTaskStore,
   }
 }
