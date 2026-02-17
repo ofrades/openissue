@@ -4,28 +4,9 @@
   "description": "TUI app for managing GitHub/GitLab issues with slash commands and file references",
   "module": "src/index.tsx",
   "type": "module",
-  "author": "ofrades",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ofrades/openissue.git"
-  },
-  "keywords": [
-    "tui",
-    "github",
-    "gitlab",
-    "issues",
-    "cli",
-    "terminal"
-  ],
   "bin": {
     "openissue": "./bin/openissue"
   },
-  "files": [
-    "bin",
-    "src",
-    "dist"
-  ],
   "scripts": {
     "dev": "bun run src/index.tsx",
     "build": "bun run build.ts",

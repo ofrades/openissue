@@ -6,14 +6,23 @@ Inspired by [OpenCode](https://opencode.ai) design. Built with [OpenTUI](https:/
 
 ## Install
 
+**Quick install (recommended):**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ofrades/openissue/master/install.sh | bash
+```
+
+**Using Bun directly:**
+
 ```bash
 bun install -g github:ofrades/openissue
 ```
 
-Or clone and run locally:
+**Or clone and run locally:**
 
 ```bash
-git clone https://github.com/ofrades/openissue.git && cd openissue
+git clone https://github.com/ofrades/openissue.git
+cd openissue
 bun install
 bun run dev
 ```
@@ -71,7 +80,7 @@ q → Quit
 
 ## Storage
 
-Issues are stored locally in `.openissue/issues.json`:
+Issues are stored locally in `.opengit/issues.json`:
 
 ```json
 [
