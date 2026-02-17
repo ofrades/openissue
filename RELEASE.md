@@ -64,3 +64,4 @@ git push --no-verify
 - First push to a new branch might skip version bump (expected)
 - Subsequent pushes will bump automatically
 # Test push to trigger version bump
+test push with version bump
