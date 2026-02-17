@@ -31,6 +31,8 @@ fi
 
 # Install openissue globally
 echo "Installing from GitHub..."
+# Remove old version if it exists
+bun remove -g openissue 2>/dev/null || true
 bun install -g github:ofrades/openissue
 
 # Verify installation
