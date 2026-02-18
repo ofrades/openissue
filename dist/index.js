@@ -27553,7 +27553,7 @@ function App(props) {
   const provider = props.state.provider();
   const issues = createMemo(() => props.state.issues());
   const issueOptions = createMemo(() => issues().map((issue) => {
-    const status = issue.status === "open" ? "[ ]" : "[x]";
+    const status = issue.status === "open" ? "\u25EF" : "\u2713";
     const issueId = issue.remoteNumber ? `#${issue.remoteNumber}` : `#${issue.id.slice(0, 8)}`;
     const maxTitleLength = 50;
     const trimmedTitle = issue.title.length > maxTitleLength ? `${issue.title.slice(0, maxTitleLength).trimEnd()}...` : issue.title;
@@ -27628,7 +27628,7 @@ function App(props) {
     if (type === "issue") {
       return issueSuggestions().map((issue) => {
         const displayId = issue.remoteNumber ? `#${issue.remoteNumber}` : `#${issue.id.substring(0, 8)}`;
-        const statusIcon = issue.status === "open" ? "[ ]" : "[x]";
+        const statusIcon = issue.status === "open" ? "\u25EF" : "\u2713";
         return {
           name: `${statusIcon} ${displayId} ${issue.title}`,
           description: issue.body.substring(0, 50) + (issue.body.length > 50 ? "..." : ""),

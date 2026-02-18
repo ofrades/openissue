@@ -106,7 +106,7 @@ export function App(props: { state: AppState; cwd: string }) {
   const issues = createMemo(() => props.state.issues());
   const issueOptions = createMemo(() =>
     issues().map((issue) => {
-      const status = issue.status === "open" ? "[ ]" : "[x]";
+      const status = issue.status === "open" ? "◯" : "✓";
       const issueId = issue.remoteNumber
         ? `#${issue.remoteNumber}`
         : `#${issue.id.slice(0, 8)}`;
@@ -204,7 +204,7 @@ export function App(props: { state: AppState; cwd: string }) {
         const displayId = issue.remoteNumber
           ? `#${issue.remoteNumber}`
           : `#${issue.id.substring(0, 8)}`;
-        const statusIcon = issue.status === "open" ? "[ ]" : "[x]";
+        const statusIcon = issue.status === "open" ? "◯" : "✓";
         return {
           name: `${statusIcon} ${displayId} ${issue.title}`,
           description:
