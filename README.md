@@ -1,4 +1,4 @@
-# 📋️ openissue
+# 📋️ ideae
 
 Minimal TUI issue tracker for GitHub and GitLab. Create, edit, and view issues with comments from your terminal.
 
@@ -9,37 +9,37 @@ Inspired by [OpenCode](https://opencode.ai) design. Built with [OpenTUI](https:/
 **Quick install (recommended):**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ofrades/openissue/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/ofrades/ideae/master/install.sh | bash
 ```
 
 **Using Bun directly:**
 
 ```bash
-bun install -g github:ofrades/openissue
+bun install -g github:ofrades/ideae
 ```
 
 **Or clone and run locally:**
 
 ```bash
-git clone https://github.com/ofrades/openissue.git
-cd openissue
+git clone https://github.com/ofrades/ideae.git
+cd ideae
 bun install
 bun run dev
 ```
 
 ## Usage
 
-Run `openissue` in any git repository:
+Run `ideae` in any git repository:
 
 ```bash
 cd your-project
-openissue
+ideae
 ```
 
 ## Interface
 
 ```
-┌─ 🐛 openissue ───────────────────────────── github: owner/repo ─┐
+┌─ 🐛 ideae ───────────────────────────── github: owner/repo ─┐
 │ n: new  up/down/j/k: nav  space: view  enter/e: edit  x: close  q: quit        │
 │                                                                  │
 │ ┌──────────────────────────────────────────────────────────────┐ │
@@ -65,7 +65,7 @@ Comments are automatically fetched from GitHub/GitLab when viewing a remote issu
 
 ## Provider Integration
 
-openissue auto-detects GitHub or GitLab from your git remote:
+ideae auto-detects GitHub or GitLab from your git remote:
 
 - **GitHub**: Uses `gh` CLI -- [install](https://cli.github.com/)
 - **GitLab**: Uses `glab` CLI -- [install](https://gitlab.com/gitlab-org/cli)
@@ -80,7 +80,7 @@ q → Quit
 
 ## Storage
 
-Issues are stored locally in `.opengit/issues.json`:
+Issues are stored locally in `.ideae/issues.json`:
 
 ```json
 [

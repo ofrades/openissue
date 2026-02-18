@@ -9,8 +9,8 @@ import { resolve } from "node:path"
 async function main() {
   const cwd = process.cwd()
 
-  // Ensure .openissue directory exists
-  const dir = resolve(cwd, ".openissue")
+  // Ensure .ideae directory exists
+  const dir = resolve(cwd, ".ideae")
   try {
     await Bun.write(resolve(dir, ".gitkeep"), "")
   } catch {
@@ -34,11 +34,18 @@ async function main() {
   // Create reactive state
   const state = createAppState(store, agentTaskStore, provider)
 
+  // Handle graceful shutdown to avoid Bun segfault
+  const cleanup = () => {
+    process.exit(0)
+  }
+  process.on('SIGINT', cleanup)
+  process.on('SIGTERM', cleanup)
+
   // Render TUI
   render(() => <App state={state} cwd={cwd} />)
 }
 
 main().catch((err) => {
-  console.error("openissue error:", err)
+  console.error("ideae error:", err)
   process.exit(1)
 })

@@ -30,7 +30,7 @@ function IssueRow(props: { issue: Issue; selected: boolean }) {
   }
 
   return (
-    <box width="100%" paddingLeft={1} paddingRight={1} backgroundColor={props.selected ? "#1f2937" : undefined}>
+    <box width="100%" height={1} alignItems="center" paddingLeft={1} paddingRight={1} backgroundColor={props.selected ? "#1f2937" : undefined}>
       <text
         fg={props.selected ? "#e5e7eb" : statusColor()}
         attributes={props.selected ? TextAttributes.BOLD : TextAttributes.NONE}

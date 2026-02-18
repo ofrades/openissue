@@ -27447,6 +27447,7 @@ function App(props) {
   const [showAgentModal, setShowAgentModal] = createSignal(false);
   const [agentModalIssue, setAgentModalIssue] = createSignal(null);
   const [agentInstructions, setAgentInstructions] = createSignal("");
+  const [showHelpModal, setShowHelpModal] = createSignal(false);
   let suggestionSeq = 0;
   const colors = {
     background: "#1a1816",
@@ -27722,12 +27723,27 @@ ${issue.body}`;
       }
       return;
     }
+    if (showHelpModal()) {
+      if (keyName2 === "escape" || keyName2 === "q" || keyName2 === "?") {
+        key.preventDefault();
+        setShowHelpModal(false);
+        return;
+      }
+      return;
+    }
     if (key.ctrl && key.name === "c") {
-      renderer.destroy();
+      setShouldExit(true);
+      setTimeout(() => renderer.destroy(), 10);
       return;
     }
     if (keyName2 === "q") {
-      renderer.destroy();
+      setShouldExit(true);
+      setTimeout(() => renderer.destroy(), 10);
+      return;
+    }
+    if (keyName2 === "?") {
+      key.preventDefault();
+      setShowHelpModal(true);
       return;
     }
     if (mode() === "list" && keyName2 === "a") {
@@ -27738,13 +27754,7 @@ ${issue.body}`;
           setAgentModalIssue(issue);
           setAgentInstructions("");
           setShowAgentModal(true);
-        } else {
-          setViewMode("agents");
-          setSelectedIndex(0);
         }
-      } else {
-        setViewMode("issues");
-        setSelectedIndex(0);
       }
       return;
     }
@@ -28231,7 +28241,7 @@ ${issue.body || ""}`;
   }
   async function saveImage(bytes, extension) {
     try {
-      const dir = resolve3(props.cwd, ".openissue", "images");
+      const dir = resolve3(props.cwd, ".ideae", "images");
       await mkdir(dir, {
         recursive: true
       });
@@ -28275,25 +28285,37 @@ ${issue.body || ""}`;
   const hintText = () => {
     if (mode() === "list") {
       if (viewMode() === "agents") {
-        return "tab/a: issues  r: refresh  j/k: nav  enter: logs  q: quit";
+        return "j/k: nav  enter: logs  ?: help";
       }
-      return "n: new  a: assign  tab: agents  space: view  e: edit  x: close  q: quit";
+      return "j/k: nav  space: view  ?: help";
     }
     if (mode() === "read") {
-      return "a: assign to agent  esc/q: back";
+      return "esc/q: back  ?: help";
     }
-    return "tab: navigate  enter: save  esc: cancel";
+    return "tab: navigate  ?: help";
+  };
+  const bottomHintLeft = () => {
+    if (mode() === "list") {
+      if (viewMode() === "agents") {
+        return "tab: switch | j/k: nav | enter: logs";
+      }
+      return "tab: switch | j/k: nav | space: view | n: new";
+    }
+    if (mode() === "read") {
+      return "esc/q: back";
+    }
+    return "tab: navigate";
   };
   const titlePlaceholder = () => editingId() ? "Edit todo (issue)" : "New todo (issue)";
   return (() => {
-    var _el$ = createElement("box"), _el$2 = createElement("box"), _el$3 = createElement("box"), _el$4 = createElement("text"), _el$5 = createElement("text"), _el$6 = createElement("text"), _el$7 = createElement("box");
+    var _el$ = createElement("box"), _el$2 = createElement("box"), _el$3 = createElement("box"), _el$4 = createElement("text"), _el$5 = createElement("text"), _el$6 = createElement("box"), _el$7 = createElement("box"), _el$8 = createElement("text"), _el$9 = createElement("text");
     insertNode(_el$, _el$2);
+    insertNode(_el$, _el$6);
     insertNode(_el$, _el$7);
     setProp(_el$, "width", "100%");
     setProp(_el$, "height", "100%");
     setProp(_el$, "flexDirection", "column");
     insertNode(_el$2, _el$3);
-    insertNode(_el$2, _el$6);
     setProp(_el$2, "width", "100%");
     setProp(_el$2, "height", 3);
     setProp(_el$2, "flexDirection", "row");
@@ -28301,174 +28323,137 @@ ${issue.body || ""}`;
     setProp(_el$2, "alignItems", "center");
     setProp(_el$2, "paddingLeft", 2);
     setProp(_el$2, "paddingRight", 2);
-    setProp(_el$2, "paddingTop", 1);
-    setProp(_el$2, "paddingBottom", 1);
     setProp(_el$2, "borderStyle", "single");
     insertNode(_el$3, _el$4);
     insertNode(_el$3, _el$5);
     setProp(_el$3, "flexDirection", "row");
     setProp(_el$3, "gap", 2);
-    setProp(_el$4, "content", "\uD83D\uDCCB openissue");
-    setProp(_el$7, "width", "100%");
-    setProp(_el$7, "flexGrow", 1);
-    insert(_el$7, (() => {
+    setProp(_el$4, "content", "\uD83D\uDCCB ideae");
+    setProp(_el$6, "width", "100%");
+    setProp(_el$6, "flexGrow", 1);
+    insert(_el$6, (() => {
       var _c$ = memo2(() => mode() === "list");
       return () => _c$() ? (() => {
-        var _el$8 = createElement("box"), _el$9 = createElement("box"), _el$0 = createElement("box");
-        insertNode(_el$8, _el$9);
-        insertNode(_el$8, _el$0);
-        setProp(_el$8, "width", "100%");
-        setProp(_el$8, "flexGrow", 1);
-        setProp(_el$8, "flexDirection", "column");
-        setProp(_el$9, "flexDirection", "row");
-        setProp(_el$9, "justifyContent", "space-between");
-        setProp(_el$9, "alignItems", "center");
-        setProp(_el$9, "paddingLeft", 2);
-        setProp(_el$9, "paddingRight", 2);
-        setProp(_el$9, "paddingTop", 1);
-        setProp(_el$9, "paddingBottom", 1);
-        insert(_el$9, (() => {
-          var _c$3 = memo2(() => viewMode() === "issues");
-          return () => _c$3() ? [(() => {
-            var _el$1 = createElement("box"), _el$10 = createElement("text"), _el$11 = createElement("text"), _el$12 = createElement("text");
-            insertNode(_el$1, _el$10);
-            insertNode(_el$1, _el$11);
-            insertNode(_el$1, _el$12);
-            setProp(_el$1, "flexDirection", "row");
-            setProp(_el$1, "gap", 3);
+        var _el$0 = createElement("box"), _el$1 = createElement("box"), _el$10 = createElement("box"), _el$11 = createElement("text"), _el$12 = createElement("text"), _el$13 = createElement("box"), _el$14 = createElement("box");
+        insertNode(_el$0, _el$1);
+        insertNode(_el$0, _el$14);
+        setProp(_el$0, "width", "100%");
+        setProp(_el$0, "flexGrow", 1);
+        setProp(_el$0, "flexDirection", "column");
+        insertNode(_el$1, _el$10);
+        insertNode(_el$1, _el$13);
+        setProp(_el$1, "flexDirection", "row");
+        setProp(_el$1, "justifyContent", "space-between");
+        setProp(_el$1, "alignItems", "center");
+        setProp(_el$1, "paddingLeft", 2);
+        setProp(_el$1, "paddingRight", 2);
+        setProp(_el$1, "borderStyle", "single");
+        insertNode(_el$10, _el$11);
+        insertNode(_el$10, _el$12);
+        setProp(_el$10, "flexDirection", "row");
+        setProp(_el$10, "gap", 2);
+        setProp(_el$13, "flexDirection", "row");
+        setProp(_el$13, "gap", 3);
+        insert(_el$13, (() => {
+          var _c$4 = memo2(() => viewMode() === "issues");
+          return () => _c$4() ? [(() => {
+            var _el$15 = createElement("text");
             effect((_p$) => {
-              var _v$9 = colors.textMuted, _v$0 = `Total ${stats().total}`, _v$1 = colors.primary, _v$10 = `Open ${stats().open}`, _v$11 = colors.textMuted, _v$12 = `Closed ${stats().closed}`;
-              _v$9 !== _p$.e && (_p$.e = setProp(_el$10, "fg", _v$9, _p$.e));
-              _v$0 !== _p$.t && (_p$.t = setProp(_el$10, "content", _v$0, _p$.t));
-              _v$1 !== _p$.a && (_p$.a = setProp(_el$11, "fg", _v$1, _p$.a));
-              _v$10 !== _p$.o && (_p$.o = setProp(_el$11, "content", _v$10, _p$.o));
-              _v$11 !== _p$.i && (_p$.i = setProp(_el$12, "fg", _v$11, _p$.i));
-              _v$12 !== _p$.n && (_p$.n = setProp(_el$12, "content", _v$12, _p$.n));
-              return _p$;
-            }, {
-              e: undefined,
-              t: undefined,
-              a: undefined,
-              o: undefined,
-              i: undefined,
-              n: undefined
-            });
-            return _el$1;
-          })(), (() => {
-            var _el$13 = createElement("box"), _el$14 = createElement("text"), _el$15 = createElement("text");
-            insertNode(_el$13, _el$14);
-            insertNode(_el$13, _el$15);
-            setProp(_el$13, "flexDirection", "row");
-            setProp(_el$13, "gap", 3);
-            effect((_p$) => {
-              var _v$13 = colors.textMuted, _v$14 = `Synced ${stats().synced}`, _v$15 = colors.textMuted, _v$16 = `Local ${stats().local}`;
-              _v$13 !== _p$.e && (_p$.e = setProp(_el$14, "fg", _v$13, _p$.e));
-              _v$14 !== _p$.t && (_p$.t = setProp(_el$14, "content", _v$14, _p$.t));
-              _v$15 !== _p$.a && (_p$.a = setProp(_el$15, "fg", _v$15, _p$.a));
-              _v$16 !== _p$.o && (_p$.o = setProp(_el$15, "content", _v$16, _p$.o));
-              return _p$;
-            }, {
-              e: undefined,
-              t: undefined,
-              a: undefined,
-              o: undefined
-            });
-            return _el$13;
-          })()] : [(() => {
-            var _el$16 = createElement("box"), _el$17 = createElement("text"), _el$18 = createElement("text"), _el$19 = createElement("text");
-            insertNode(_el$16, _el$17);
-            insertNode(_el$16, _el$18);
-            insertNode(_el$16, _el$19);
-            setProp(_el$16, "flexDirection", "row");
-            setProp(_el$16, "gap", 3);
-            effect((_p$) => {
-              var _v$17 = colors.textMuted, _v$18 = `Total ${agentStats().total}`, _v$19 = colors.primaryBright, _v$20 = `Active ${agentStats().active}`, _v$21 = colors.primary, _v$22 = `Done ${agentStats().completed}`;
-              _v$17 !== _p$.e && (_p$.e = setProp(_el$17, "fg", _v$17, _p$.e));
-              _v$18 !== _p$.t && (_p$.t = setProp(_el$17, "content", _v$18, _p$.t));
-              _v$19 !== _p$.a && (_p$.a = setProp(_el$18, "fg", _v$19, _p$.a));
-              _v$20 !== _p$.o && (_p$.o = setProp(_el$18, "content", _v$20, _p$.o));
-              _v$21 !== _p$.i && (_p$.i = setProp(_el$19, "fg", _v$21, _p$.i));
-              _v$22 !== _p$.n && (_p$.n = setProp(_el$19, "content", _v$22, _p$.n));
-              return _p$;
-            }, {
-              e: undefined,
-              t: undefined,
-              a: undefined,
-              o: undefined,
-              i: undefined,
-              n: undefined
-            });
-            return _el$16;
-          })(), (() => {
-            var _el$20 = createElement("box"), _el$21 = createElement("text"), _el$22 = createElement("text");
-            insertNode(_el$20, _el$21);
-            insertNode(_el$20, _el$22);
-            setProp(_el$20, "flexDirection", "row");
-            setProp(_el$20, "gap", 3);
-            effect((_p$) => {
-              var _v$23 = colors.textDim, _v$24 = `Failed ${agentStats().failed}`, _v$25 = colors.textMuted, _v$26 = `Draft ${agentStats().draft}`;
-              _v$23 !== _p$.e && (_p$.e = setProp(_el$21, "fg", _v$23, _p$.e));
-              _v$24 !== _p$.t && (_p$.t = setProp(_el$21, "content", _v$24, _p$.t));
-              _v$25 !== _p$.a && (_p$.a = setProp(_el$22, "fg", _v$25, _p$.a));
-              _v$26 !== _p$.o && (_p$.o = setProp(_el$22, "content", _v$26, _p$.o));
-              return _p$;
-            }, {
-              e: undefined,
-              t: undefined,
-              a: undefined,
-              o: undefined
-            });
-            return _el$20;
-          })()];
-        })());
-        setProp(_el$0, "height", 1);
-        setProp(_el$0, "paddingLeft", 2);
-        insert(_el$0, (() => {
-          var _c$4 = memo2(() => !!message());
-          return () => _c$4() && (() => {
-            var _el$23 = createElement("text");
-            effect((_p$) => {
-              var _v$27 = colors.primary, _v$28 = message();
-              _v$27 !== _p$.e && (_p$.e = setProp(_el$23, "fg", _v$27, _p$.e));
-              _v$28 !== _p$.t && (_p$.t = setProp(_el$23, "content", _v$28, _p$.t));
+              var _v$17 = colors.primary, _v$18 = `Open ${stats().open}`;
+              _v$17 !== _p$.e && (_p$.e = setProp(_el$15, "fg", _v$17, _p$.e));
+              _v$18 !== _p$.t && (_p$.t = setProp(_el$15, "content", _v$18, _p$.t));
               return _p$;
             }, {
               e: undefined,
               t: undefined
             });
-            return _el$23;
+            return _el$15;
+          })(), (() => {
+            var _el$16 = createElement("text");
+            effect((_p$) => {
+              var _v$19 = colors.textMuted, _v$20 = `Closed ${stats().closed}`;
+              _v$19 !== _p$.e && (_p$.e = setProp(_el$16, "fg", _v$19, _p$.e));
+              _v$20 !== _p$.t && (_p$.t = setProp(_el$16, "content", _v$20, _p$.t));
+              return _p$;
+            }, {
+              e: undefined,
+              t: undefined
+            });
+            return _el$16;
+          })()] : [(() => {
+            var _el$17 = createElement("text");
+            effect((_p$) => {
+              var _v$21 = colors.primaryBright, _v$22 = `Active ${agentStats().active}`;
+              _v$21 !== _p$.e && (_p$.e = setProp(_el$17, "fg", _v$21, _p$.e));
+              _v$22 !== _p$.t && (_p$.t = setProp(_el$17, "content", _v$22, _p$.t));
+              return _p$;
+            }, {
+              e: undefined,
+              t: undefined
+            });
+            return _el$17;
+          })(), (() => {
+            var _el$18 = createElement("text");
+            effect((_p$) => {
+              var _v$23 = colors.primary, _v$24 = `Done ${agentStats().completed}`;
+              _v$23 !== _p$.e && (_p$.e = setProp(_el$18, "fg", _v$23, _p$.e));
+              _v$24 !== _p$.t && (_p$.t = setProp(_el$18, "content", _v$24, _p$.t));
+              return _p$;
+            }, {
+              e: undefined,
+              t: undefined
+            });
+            return _el$18;
+          })()];
+        })());
+        setProp(_el$14, "height", 1);
+        setProp(_el$14, "paddingLeft", 2);
+        insert(_el$14, (() => {
+          var _c$5 = memo2(() => !!message());
+          return () => _c$5() && (() => {
+            var _el$19 = createElement("text");
+            effect((_p$) => {
+              var _v$25 = colors.primary, _v$26 = message();
+              _v$25 !== _p$.e && (_p$.e = setProp(_el$19, "fg", _v$25, _p$.e));
+              _v$26 !== _p$.t && (_p$.t = setProp(_el$19, "content", _v$26, _p$.t));
+              return _p$;
+            }, {
+              e: undefined,
+              t: undefined
+            });
+            return _el$19;
           })();
         })());
-        insert(_el$8, (() => {
-          var _c$5 = memo2(() => viewMode() === "issues");
-          return () => _c$5() ? memo2(() => issueOptions().length === 0)() ? (() => {
-            var _el$24 = createElement("box"), _el$25 = createElement("text");
-            insertNode(_el$24, _el$25);
-            setProp(_el$24, "paddingLeft", 2);
-            setProp(_el$24, "paddingTop", 2);
-            setProp(_el$25, "content", "No todos yet. Press 'n' to create one.");
-            effect((_$p) => setProp(_el$25, "fg", colors.textDim, _$p));
-            return _el$24;
+        insert(_el$0, (() => {
+          var _c$6 = memo2(() => viewMode() === "issues");
+          return () => _c$6() ? memo2(() => issueOptions().length === 0)() ? (() => {
+            var _el$20 = createElement("box"), _el$21 = createElement("text");
+            insertNode(_el$20, _el$21);
+            setProp(_el$20, "paddingLeft", 2);
+            setProp(_el$20, "paddingTop", 2);
+            setProp(_el$21, "content", "No todos yet. Press 'n' to create one.");
+            effect((_$p) => setProp(_el$21, "fg", colors.textDim, _$p));
+            return _el$20;
           })() : (() => {
-            var _el$26 = createElement("select");
-            setProp(_el$26, "width", "100%");
-            setProp(_el$26, "height", "100%");
-            setProp(_el$26, "showScrollIndicator", true);
-            setProp(_el$26, "focused", true);
-            setProp(_el$26, "backgroundColor", "transparent");
-            setProp(_el$26, "onChange", (index) => setSelectedIndex(index));
-            setProp(_el$26, "onSelect", (index) => {
+            var _el$22 = createElement("select");
+            setProp(_el$22, "width", "100%");
+            setProp(_el$22, "height", "100%");
+            setProp(_el$22, "showScrollIndicator", true);
+            setProp(_el$22, "focused", true);
+            setProp(_el$22, "backgroundColor", "transparent");
+            setProp(_el$22, "onChange", (index) => setSelectedIndex(index));
+            setProp(_el$22, "onSelect", (index) => {
               const issue = issues()[index];
               if (issue)
                 openEdit(issue);
             });
             effect((_p$) => {
-              var _v$29 = issueOptions(), _v$30 = selectedIndex(), _v$31 = colors.primary, _v$32 = colors.textStrong, _v$33 = colors.highlight;
-              _v$29 !== _p$.e && (_p$.e = setProp(_el$26, "options", _v$29, _p$.e));
-              _v$30 !== _p$.t && (_p$.t = setProp(_el$26, "selectedIndex", _v$30, _p$.t));
-              _v$31 !== _p$.a && (_p$.a = setProp(_el$26, "selectedBackgroundColor", _v$31, _p$.a));
-              _v$32 !== _p$.o && (_p$.o = setProp(_el$26, "textColor", _v$32, _p$.o));
-              _v$33 !== _p$.i && (_p$.i = setProp(_el$26, "selectedTextColor", _v$33, _p$.i));
+              var _v$27 = issueOptions(), _v$28 = selectedIndex(), _v$29 = colors.primary, _v$30 = colors.textStrong, _v$31 = colors.highlight;
+              _v$27 !== _p$.e && (_p$.e = setProp(_el$22, "options", _v$27, _p$.e));
+              _v$28 !== _p$.t && (_p$.t = setProp(_el$22, "selectedIndex", _v$28, _p$.t));
+              _v$29 !== _p$.a && (_p$.a = setProp(_el$22, "selectedBackgroundColor", _v$29, _p$.a));
+              _v$30 !== _p$.o && (_p$.o = setProp(_el$22, "textColor", _v$30, _p$.o));
+              _v$31 !== _p$.i && (_p$.i = setProp(_el$22, "selectedTextColor", _v$31, _p$.i));
               return _p$;
             }, {
               e: undefined,
@@ -28477,24 +28462,24 @@ ${issue.body || ""}`;
               o: undefined,
               i: undefined
             });
-            return _el$26;
+            return _el$22;
           })() : memo2(() => agentTaskOptions().length === 0)() ? (() => {
-            var _el$27 = createElement("box"), _el$28 = createElement("text");
-            insertNode(_el$27, _el$28);
-            setProp(_el$27, "paddingLeft", 2);
-            setProp(_el$27, "paddingTop", 2);
-            setProp(_el$28, "content", "No agent tasks yet. Press 'n' to create one or 'r' to refresh.");
-            effect((_$p) => setProp(_el$28, "fg", colors.textDim, _$p));
-            return _el$27;
+            var _el$23 = createElement("box"), _el$24 = createElement("text");
+            insertNode(_el$23, _el$24);
+            setProp(_el$23, "paddingLeft", 2);
+            setProp(_el$23, "paddingTop", 2);
+            setProp(_el$24, "content", "No agent tasks yet. Press 'n' to create one or 'r' to refresh.");
+            effect((_$p) => setProp(_el$24, "fg", colors.textDim, _$p));
+            return _el$23;
           })() : (() => {
-            var _el$29 = createElement("select");
-            setProp(_el$29, "width", "100%");
-            setProp(_el$29, "height", "100%");
-            setProp(_el$29, "showScrollIndicator", true);
-            setProp(_el$29, "focused", true);
-            setProp(_el$29, "backgroundColor", "transparent");
-            setProp(_el$29, "onChange", (index) => setSelectedIndex(index));
-            setProp(_el$29, "onSelect", (index) => {
+            var _el$25 = createElement("select");
+            setProp(_el$25, "width", "100%");
+            setProp(_el$25, "height", "100%");
+            setProp(_el$25, "showScrollIndicator", true);
+            setProp(_el$25, "focused", true);
+            setProp(_el$25, "backgroundColor", "transparent");
+            setProp(_el$25, "onChange", (index) => setSelectedIndex(index));
+            setProp(_el$25, "onSelect", (index) => {
               const task = agentTasks()[index];
               if (task) {
                 const provider2 = props.state.provider();
@@ -28513,12 +28498,12 @@ ${issue.body || ""}`;
               }
             });
             effect((_p$) => {
-              var _v$34 = agentTaskOptions(), _v$35 = selectedIndex(), _v$36 = colors.primary, _v$37 = colors.textStrong, _v$38 = colors.highlight;
-              _v$34 !== _p$.e && (_p$.e = setProp(_el$29, "options", _v$34, _p$.e));
-              _v$35 !== _p$.t && (_p$.t = setProp(_el$29, "selectedIndex", _v$35, _p$.t));
-              _v$36 !== _p$.a && (_p$.a = setProp(_el$29, "selectedBackgroundColor", _v$36, _p$.a));
-              _v$37 !== _p$.o && (_p$.o = setProp(_el$29, "textColor", _v$37, _p$.o));
-              _v$38 !== _p$.i && (_p$.i = setProp(_el$29, "selectedTextColor", _v$38, _p$.i));
+              var _v$32 = agentTaskOptions(), _v$33 = selectedIndex(), _v$34 = colors.primary, _v$35 = colors.textStrong, _v$36 = colors.highlight;
+              _v$32 !== _p$.e && (_p$.e = setProp(_el$25, "options", _v$32, _p$.e));
+              _v$33 !== _p$.t && (_p$.t = setProp(_el$25, "selectedIndex", _v$33, _p$.t));
+              _v$34 !== _p$.a && (_p$.a = setProp(_el$25, "selectedBackgroundColor", _v$34, _p$.a));
+              _v$35 !== _p$.o && (_p$.o = setProp(_el$25, "textColor", _v$35, _p$.o));
+              _v$36 !== _p$.i && (_p$.i = setProp(_el$25, "selectedTextColor", _v$36, _p$.i));
               return _p$;
             }, {
               e: undefined,
@@ -28527,84 +28512,104 @@ ${issue.body || ""}`;
               o: undefined,
               i: undefined
             });
-            return _el$29;
+            return _el$25;
           })();
         })(), null);
-        effect((_$p) => setProp(_el$8, "backgroundColor", colors.panel, _$p));
-        return _el$8;
+        effect((_p$) => {
+          var { panel: _v$1, border: _v$10 } = colors, _v$11 = viewMode() === "issues" ? colors.primary : colors.textMuted, _v$12 = viewMode() === "issues" ? TextAttributes.BOLD : TextAttributes.NONE, _v$13 = viewMode() === "issues" ? "\u25CF Issues" : "\u25CB Issues", _v$14 = viewMode() === "agents" ? colors.primaryBright : colors.textMuted, _v$15 = viewMode() === "agents" ? TextAttributes.BOLD : TextAttributes.NONE, _v$16 = viewMode() === "agents" ? "\u25CF Agents" : "\u25CB Agents";
+          _v$1 !== _p$.e && (_p$.e = setProp(_el$0, "backgroundColor", _v$1, _p$.e));
+          _v$10 !== _p$.t && (_p$.t = setProp(_el$1, "borderColor", _v$10, _p$.t));
+          _v$11 !== _p$.a && (_p$.a = setProp(_el$11, "fg", _v$11, _p$.a));
+          _v$12 !== _p$.o && (_p$.o = setProp(_el$11, "attributes", _v$12, _p$.o));
+          _v$13 !== _p$.i && (_p$.i = setProp(_el$11, "content", _v$13, _p$.i));
+          _v$14 !== _p$.n && (_p$.n = setProp(_el$12, "fg", _v$14, _p$.n));
+          _v$15 !== _p$.s && (_p$.s = setProp(_el$12, "attributes", _v$15, _p$.s));
+          _v$16 !== _p$.h && (_p$.h = setProp(_el$12, "content", _v$16, _p$.h));
+          return _p$;
+        }, {
+          e: undefined,
+          t: undefined,
+          a: undefined,
+          o: undefined,
+          i: undefined,
+          n: undefined,
+          s: undefined,
+          h: undefined
+        });
+        return _el$0;
       })() : memo2(() => mode() === "read")() ? (() => {
         const issue = readingId() ? props.state.store.get(readingId()) : null;
         return (() => {
-          var _el$30 = createElement("box"), _el$31 = createElement("box"), _el$32 = createElement("text"), _el$33 = createElement("box"), _el$34 = createElement("scrollbox"), _el$35 = createElement("box"), _el$36 = createElement("code");
-          insertNode(_el$30, _el$31);
-          insertNode(_el$30, _el$33);
-          setProp(_el$30, "width", "100%");
-          setProp(_el$30, "flexGrow", 1);
-          setProp(_el$30, "padding", 2);
-          setProp(_el$30, "flexDirection", "column");
-          setProp(_el$30, "gap", 2);
-          insertNode(_el$31, _el$32);
-          setProp(_el$31, "height", 3);
-          setProp(_el$31, "borderStyle", "single");
-          setProp(_el$31, "paddingLeft", 2);
-          setProp(_el$31, "paddingRight", 2);
-          setProp(_el$31, "flexDirection", "row");
-          setProp(_el$31, "alignItems", "center");
-          insert(_el$30, (() => {
-            var _c$6 = memo2(() => !!message());
-            return () => _c$6() && (() => {
-              var _el$37 = createElement("box"), _el$38 = createElement("text");
-              insertNode(_el$37, _el$38);
-              setProp(_el$37, "height", 1);
+          var _el$26 = createElement("box"), _el$27 = createElement("box"), _el$28 = createElement("text"), _el$29 = createElement("box"), _el$30 = createElement("scrollbox"), _el$31 = createElement("box"), _el$32 = createElement("code");
+          insertNode(_el$26, _el$27);
+          insertNode(_el$26, _el$29);
+          setProp(_el$26, "width", "100%");
+          setProp(_el$26, "flexGrow", 1);
+          setProp(_el$26, "padding", 2);
+          setProp(_el$26, "flexDirection", "column");
+          setProp(_el$26, "gap", 2);
+          insertNode(_el$27, _el$28);
+          setProp(_el$27, "height", 3);
+          setProp(_el$27, "borderStyle", "single");
+          setProp(_el$27, "paddingLeft", 2);
+          setProp(_el$27, "paddingRight", 2);
+          setProp(_el$27, "flexDirection", "row");
+          setProp(_el$27, "alignItems", "center");
+          insert(_el$26, (() => {
+            var _c$7 = memo2(() => !!message());
+            return () => _c$7() && (() => {
+              var _el$33 = createElement("box"), _el$34 = createElement("text");
+              insertNode(_el$33, _el$34);
+              setProp(_el$33, "height", 1);
               effect((_p$) => {
-                var _v$48 = colors.textMuted, _v$49 = message();
-                _v$48 !== _p$.e && (_p$.e = setProp(_el$38, "fg", _v$48, _p$.e));
-                _v$49 !== _p$.t && (_p$.t = setProp(_el$38, "content", _v$49, _p$.t));
+                var _v$46 = colors.textMuted, _v$47 = message();
+                _v$46 !== _p$.e && (_p$.e = setProp(_el$34, "fg", _v$46, _p$.e));
+                _v$47 !== _p$.t && (_p$.t = setProp(_el$34, "content", _v$47, _p$.t));
                 return _p$;
               }, {
                 e: undefined,
                 t: undefined
               });
-              return _el$37;
+              return _el$33;
             })();
-          })(), _el$33);
-          insertNode(_el$33, _el$34);
-          setProp(_el$33, "flexGrow", 1);
-          setProp(_el$33, "borderStyle", "single");
-          setProp(_el$33, "padding", 2);
-          insertNode(_el$34, _el$35);
-          setProp(_el$34, "width", "100%");
-          setProp(_el$34, "flexGrow", 1);
-          insertNode(_el$35, _el$36);
-          setProp(_el$35, "flexDirection", "column");
-          setProp(_el$35, "gap", 1);
-          setProp(_el$36, "filetype", "markdown");
-          setProp(_el$36, "syntaxStyle", syntaxStyle);
-          setProp(_el$36, "wrapMode", "word");
-          setProp(_el$36, "bg", "transparent");
-          insert(_el$35, (() => {
-            var _c$7 = memo2(() => comments().length > 0);
-            return () => _c$7() && (() => {
-              var _el$39 = createElement("box"), _el$40 = createElement("text");
-              insertNode(_el$39, _el$40);
-              setProp(_el$39, "flexDirection", "column");
-              setProp(_el$39, "gap", 1);
-              setProp(_el$39, "marginTop", 2);
-              setProp(_el$40, "content", "\u2500\u2500\u2500 Comments \u2500\u2500\u2500");
-              insert(_el$39, () => comments().map((comment) => (() => {
-                var _el$41 = createElement("box"), _el$42 = createElement("text"), _el$43 = createElement("text");
-                insertNode(_el$41, _el$42);
-                insertNode(_el$41, _el$43);
-                setProp(_el$41, "flexDirection", "column");
-                setProp(_el$41, "gap", 0);
-                setProp(_el$41, "marginTop", 1);
+          })(), _el$29);
+          insertNode(_el$29, _el$30);
+          setProp(_el$29, "flexGrow", 1);
+          setProp(_el$29, "borderStyle", "single");
+          setProp(_el$29, "padding", 2);
+          insertNode(_el$30, _el$31);
+          setProp(_el$30, "width", "100%");
+          setProp(_el$30, "flexGrow", 1);
+          insertNode(_el$31, _el$32);
+          setProp(_el$31, "flexDirection", "column");
+          setProp(_el$31, "gap", 1);
+          setProp(_el$32, "filetype", "markdown");
+          setProp(_el$32, "syntaxStyle", syntaxStyle);
+          setProp(_el$32, "wrapMode", "word");
+          setProp(_el$32, "bg", "transparent");
+          insert(_el$31, (() => {
+            var _c$8 = memo2(() => comments().length > 0);
+            return () => _c$8() && (() => {
+              var _el$35 = createElement("box"), _el$36 = createElement("text");
+              insertNode(_el$35, _el$36);
+              setProp(_el$35, "flexDirection", "column");
+              setProp(_el$35, "gap", 1);
+              setProp(_el$35, "marginTop", 2);
+              setProp(_el$36, "content", "\u2500\u2500\u2500 Comments \u2500\u2500\u2500");
+              insert(_el$35, () => comments().map((comment) => (() => {
+                var _el$37 = createElement("box"), _el$38 = createElement("text"), _el$39 = createElement("text");
+                insertNode(_el$37, _el$38);
+                insertNode(_el$37, _el$39);
+                setProp(_el$37, "flexDirection", "column");
+                setProp(_el$37, "gap", 0);
+                setProp(_el$37, "marginTop", 1);
                 effect((_p$) => {
-                  var _v$50 = colors.primary, _v$51 = TextAttributes.BOLD, _v$52 = `@${comment.author} \xB7 ${new Date(comment.createdAt).toLocaleDateString()}`, _v$53 = colors.text, _v$54 = comment.body;
-                  _v$50 !== _p$.e && (_p$.e = setProp(_el$42, "fg", _v$50, _p$.e));
-                  _v$51 !== _p$.t && (_p$.t = setProp(_el$42, "attributes", _v$51, _p$.t));
-                  _v$52 !== _p$.a && (_p$.a = setProp(_el$42, "content", _v$52, _p$.a));
-                  _v$53 !== _p$.o && (_p$.o = setProp(_el$43, "fg", _v$53, _p$.o));
-                  _v$54 !== _p$.i && (_p$.i = setProp(_el$43, "content", _v$54, _p$.i));
+                  var _v$48 = colors.primary, _v$49 = TextAttributes.BOLD, _v$50 = `@${comment.author} \xB7 ${new Date(comment.createdAt).toLocaleDateString()}`, _v$51 = colors.text, _v$52 = comment.body;
+                  _v$48 !== _p$.e && (_p$.e = setProp(_el$38, "fg", _v$48, _p$.e));
+                  _v$49 !== _p$.t && (_p$.t = setProp(_el$38, "attributes", _v$49, _p$.t));
+                  _v$50 !== _p$.a && (_p$.a = setProp(_el$38, "content", _v$50, _p$.a));
+                  _v$51 !== _p$.o && (_p$.o = setProp(_el$39, "fg", _v$51, _p$.o));
+                  _v$52 !== _p$.i && (_p$.i = setProp(_el$39, "content", _v$52, _p$.i));
                   return _p$;
                 }, {
                   e: undefined,
@@ -28613,23 +28618,23 @@ ${issue.body || ""}`;
                   o: undefined,
                   i: undefined
                 });
-                return _el$41;
+                return _el$37;
               })()), null);
-              effect((_$p) => setProp(_el$40, "fg", colors.textMuted, _$p));
-              return _el$39;
+              effect((_$p) => setProp(_el$36, "fg", colors.textMuted, _$p));
+              return _el$35;
             })();
           })(), null);
           effect((_p$) => {
-            var { panel: _v$39, border: _v$40, panelInset: _v$41, textStrong: _v$42 } = colors, _v$43 = TextAttributes.BOLD, _v$44 = issue?.title || "", _v$45 = colors.border, _v$46 = colors.panelInset, _v$47 = issue?.body || "No description";
-            _v$39 !== _p$.e && (_p$.e = setProp(_el$30, "backgroundColor", _v$39, _p$.e));
-            _v$40 !== _p$.t && (_p$.t = setProp(_el$31, "borderColor", _v$40, _p$.t));
-            _v$41 !== _p$.a && (_p$.a = setProp(_el$31, "backgroundColor", _v$41, _p$.a));
-            _v$42 !== _p$.o && (_p$.o = setProp(_el$32, "fg", _v$42, _p$.o));
-            _v$43 !== _p$.i && (_p$.i = setProp(_el$32, "attributes", _v$43, _p$.i));
-            _v$44 !== _p$.n && (_p$.n = setProp(_el$32, "content", _v$44, _p$.n));
-            _v$45 !== _p$.s && (_p$.s = setProp(_el$33, "borderColor", _v$45, _p$.s));
-            _v$46 !== _p$.h && (_p$.h = setProp(_el$33, "backgroundColor", _v$46, _p$.h));
-            _v$47 !== _p$.r && (_p$.r = setProp(_el$36, "content", _v$47, _p$.r));
+            var { panel: _v$37, border: _v$38, panelInset: _v$39, textStrong: _v$40 } = colors, _v$41 = TextAttributes.BOLD, _v$42 = issue?.title || "", _v$43 = colors.border, _v$44 = colors.panelInset, _v$45 = issue?.body || "No description";
+            _v$37 !== _p$.e && (_p$.e = setProp(_el$26, "backgroundColor", _v$37, _p$.e));
+            _v$38 !== _p$.t && (_p$.t = setProp(_el$27, "borderColor", _v$38, _p$.t));
+            _v$39 !== _p$.a && (_p$.a = setProp(_el$27, "backgroundColor", _v$39, _p$.a));
+            _v$40 !== _p$.o && (_p$.o = setProp(_el$28, "fg", _v$40, _p$.o));
+            _v$41 !== _p$.i && (_p$.i = setProp(_el$28, "attributes", _v$41, _p$.i));
+            _v$42 !== _p$.n && (_p$.n = setProp(_el$28, "content", _v$42, _p$.n));
+            _v$43 !== _p$.s && (_p$.s = setProp(_el$29, "borderColor", _v$43, _p$.s));
+            _v$44 !== _p$.h && (_p$.h = setProp(_el$29, "backgroundColor", _v$44, _p$.h));
+            _v$45 !== _p$.r && (_p$.r = setProp(_el$32, "content", _v$45, _p$.r));
             return _p$;
           }, {
             e: undefined,
@@ -28642,24 +28647,24 @@ ${issue.body || ""}`;
             h: undefined,
             r: undefined
           });
-          return _el$30;
+          return _el$26;
         })();
       })() : (() => {
-        var _el$44 = createElement("box"), _el$45 = createElement("box"), _el$46 = createElement("input"), _el$47 = createElement("box"), _el$48 = createElement("textarea");
-        insertNode(_el$44, _el$45);
-        insertNode(_el$44, _el$47);
-        setProp(_el$44, "width", "100%");
-        setProp(_el$44, "flexGrow", 1);
-        setProp(_el$44, "flexDirection", "column");
-        setProp(_el$44, "padding", 2);
-        setProp(_el$44, "gap", 2);
-        insertNode(_el$45, _el$46);
-        setProp(_el$45, "height", 3);
-        setProp(_el$45, "borderStyle", "single");
-        setProp(_el$45, "paddingLeft", 2);
-        setProp(_el$45, "paddingRight", 2);
-        setProp(_el$45, "flexDirection", "row");
-        setProp(_el$45, "alignItems", "center");
+        var _el$40 = createElement("box"), _el$41 = createElement("box"), _el$42 = createElement("input"), _el$43 = createElement("box"), _el$44 = createElement("textarea");
+        insertNode(_el$40, _el$41);
+        insertNode(_el$40, _el$43);
+        setProp(_el$40, "width", "100%");
+        setProp(_el$40, "flexGrow", 1);
+        setProp(_el$40, "flexDirection", "column");
+        setProp(_el$40, "padding", 2);
+        setProp(_el$40, "gap", 2);
+        insertNode(_el$41, _el$42);
+        setProp(_el$41, "height", 3);
+        setProp(_el$41, "borderStyle", "single");
+        setProp(_el$41, "paddingLeft", 2);
+        setProp(_el$41, "paddingRight", 2);
+        setProp(_el$41, "flexDirection", "row");
+        setProp(_el$41, "alignItems", "center");
         use((renderable) => {
           titleInput = renderable;
           if (!renderable)
@@ -28667,36 +28672,36 @@ ${issue.body || ""}`;
           if (renderable.value !== titleValue()) {
             renderable.value = titleValue();
           }
-        }, _el$46);
-        setProp(_el$46, "width", "100%");
-        setProp(_el$46, "flexGrow", 1);
-        setProp(_el$46, "backgroundColor", "transparent");
-        setProp(_el$46, "focusedBackgroundColor", "transparent");
-        setProp(_el$46, "onSubmit", saveIssue);
-        setProp(_el$46, "onKeyDown", handleTitleKeyDown);
-        setProp(_el$46, "onInput", handleTitleInput);
-        insert(_el$44, (() => {
-          var _c$8 = memo2(() => !!message());
-          return () => _c$8() && (() => {
-            var _el$49 = createElement("box"), _el$50 = createElement("text");
-            insertNode(_el$49, _el$50);
-            setProp(_el$49, "height", 1);
+        }, _el$42);
+        setProp(_el$42, "width", "100%");
+        setProp(_el$42, "flexGrow", 1);
+        setProp(_el$42, "backgroundColor", "transparent");
+        setProp(_el$42, "focusedBackgroundColor", "transparent");
+        setProp(_el$42, "onSubmit", saveIssue);
+        setProp(_el$42, "onKeyDown", handleTitleKeyDown);
+        setProp(_el$42, "onInput", handleTitleInput);
+        insert(_el$40, (() => {
+          var _c$9 = memo2(() => !!message());
+          return () => _c$9() && (() => {
+            var _el$45 = createElement("box"), _el$46 = createElement("text");
+            insertNode(_el$45, _el$46);
+            setProp(_el$45, "height", 1);
             effect((_p$) => {
-              var _v$70 = colors.primary, _v$71 = message();
-              _v$70 !== _p$.e && (_p$.e = setProp(_el$50, "fg", _v$70, _p$.e));
-              _v$71 !== _p$.t && (_p$.t = setProp(_el$50, "content", _v$71, _p$.t));
+              var _v$68 = colors.primary, _v$69 = message();
+              _v$68 !== _p$.e && (_p$.e = setProp(_el$46, "fg", _v$68, _p$.e));
+              _v$69 !== _p$.t && (_p$.t = setProp(_el$46, "content", _v$69, _p$.t));
               return _p$;
             }, {
               e: undefined,
               t: undefined
             });
-            return _el$49;
+            return _el$45;
           })();
-        })(), _el$47);
-        insertNode(_el$47, _el$48);
-        setProp(_el$47, "flexGrow", 1);
-        setProp(_el$47, "borderStyle", "single");
-        setProp(_el$47, "padding", 2);
+        })(), _el$43);
+        insertNode(_el$43, _el$44);
+        setProp(_el$43, "flexGrow", 1);
+        setProp(_el$43, "borderStyle", "single");
+        setProp(_el$43, "padding", 2);
         use((renderable) => {
           descTextarea = renderable;
           if (!renderable)
@@ -28704,43 +28709,43 @@ ${issue.body || ""}`;
           if (renderable.plainText !== descValue()) {
             renderable.setText(descValue());
           }
-        }, _el$48);
-        setProp(_el$48, "flexGrow", 1);
-        setProp(_el$48, "placeholder", "Description (markdown supported)");
-        setProp(_el$48, "backgroundColor", "transparent");
-        setProp(_el$48, "focusedBackgroundColor", "transparent");
-        setProp(_el$48, "wrapMode", "word");
-        setProp(_el$48, "syntaxStyle", syntaxStyle);
-        setProp(_el$48, "tabIndicator", "  ");
-        setProp(_el$48, "onSubmit", saveIssue);
-        setProp(_el$48, "onKeyDown", handleDescKeyDown);
-        setProp(_el$48, "onContentChange", () => handleDescInput(descTextarea?.plainText ?? ""));
-        insert(_el$44, (() => {
-          var _c$9 = memo2(() => !!(showSuggestions() && suggestionOptions().length > 0));
-          return () => _c$9() && (() => {
-            var _el$51 = createElement("box"), _el$52 = createElement("select");
-            insertNode(_el$51, _el$52);
-            setProp(_el$51, "width", "100%");
-            setProp(_el$51, "maxHeight", 12);
-            setProp(_el$51, "borderStyle", "single");
-            setProp(_el$51, "zIndex", 100);
-            setProp(_el$52, "width", "100%");
-            setProp(_el$52, "showScrollIndicator", true);
-            setProp(_el$52, "backgroundColor", "transparent");
-            setProp(_el$52, "onChange", (index) => setSuggestionIndex(index));
-            setProp(_el$52, "onSelect", (index) => acceptSuggestion(index));
+        }, _el$44);
+        setProp(_el$44, "flexGrow", 1);
+        setProp(_el$44, "placeholder", "Description (markdown supported)");
+        setProp(_el$44, "backgroundColor", "transparent");
+        setProp(_el$44, "focusedBackgroundColor", "transparent");
+        setProp(_el$44, "wrapMode", "word");
+        setProp(_el$44, "syntaxStyle", syntaxStyle);
+        setProp(_el$44, "tabIndicator", "  ");
+        setProp(_el$44, "onSubmit", saveIssue);
+        setProp(_el$44, "onKeyDown", handleDescKeyDown);
+        setProp(_el$44, "onContentChange", () => handleDescInput(descTextarea?.plainText ?? ""));
+        insert(_el$40, (() => {
+          var _c$0 = memo2(() => !!(showSuggestions() && suggestionOptions().length > 0));
+          return () => _c$0() && (() => {
+            var _el$47 = createElement("box"), _el$48 = createElement("select");
+            insertNode(_el$47, _el$48);
+            setProp(_el$47, "width", "100%");
+            setProp(_el$47, "maxHeight", 12);
+            setProp(_el$47, "borderStyle", "single");
+            setProp(_el$47, "zIndex", 100);
+            setProp(_el$48, "width", "100%");
+            setProp(_el$48, "showScrollIndicator", true);
+            setProp(_el$48, "backgroundColor", "transparent");
+            setProp(_el$48, "onChange", (index) => setSuggestionIndex(index));
+            setProp(_el$48, "onSelect", (index) => acceptSuggestion(index));
             effect((_p$) => {
-              var { primary: _v$72, panelInset: _v$73 } = colors, _v$74 = Math.min(8, suggestionOptions().length), _v$75 = suggestionOptions(), _v$76 = suggestionIndex(), _v$77 = colors.primary, _v$78 = colors.highlight, _v$79 = colors.textMuted, _v$80 = colors.textMuted, _v$81 = colors.textStrong;
-              _v$72 !== _p$.e && (_p$.e = setProp(_el$51, "borderColor", _v$72, _p$.e));
-              _v$73 !== _p$.t && (_p$.t = setProp(_el$51, "backgroundColor", _v$73, _p$.t));
-              _v$74 !== _p$.a && (_p$.a = setProp(_el$52, "height", _v$74, _p$.a));
-              _v$75 !== _p$.o && (_p$.o = setProp(_el$52, "options", _v$75, _p$.o));
-              _v$76 !== _p$.i && (_p$.i = setProp(_el$52, "selectedIndex", _v$76, _p$.i));
-              _v$77 !== _p$.n && (_p$.n = setProp(_el$52, "selectedBackgroundColor", _v$77, _p$.n));
-              _v$78 !== _p$.s && (_p$.s = setProp(_el$52, "selectedTextColor", _v$78, _p$.s));
-              _v$79 !== _p$.h && (_p$.h = setProp(_el$52, "textColor", _v$79, _p$.h));
-              _v$80 !== _p$.r && (_p$.r = setProp(_el$52, "descriptionColor", _v$80, _p$.r));
-              _v$81 !== _p$.d && (_p$.d = setProp(_el$52, "selectedDescriptionColor", _v$81, _p$.d));
+              var { primary: _v$70, panelInset: _v$71 } = colors, _v$72 = Math.min(8, suggestionOptions().length), _v$73 = suggestionOptions(), _v$74 = suggestionIndex(), _v$75 = colors.primary, _v$76 = colors.highlight, _v$77 = colors.textMuted, _v$78 = colors.textMuted, _v$79 = colors.textStrong;
+              _v$70 !== _p$.e && (_p$.e = setProp(_el$47, "borderColor", _v$70, _p$.e));
+              _v$71 !== _p$.t && (_p$.t = setProp(_el$47, "backgroundColor", _v$71, _p$.t));
+              _v$72 !== _p$.a && (_p$.a = setProp(_el$48, "height", _v$72, _p$.a));
+              _v$73 !== _p$.o && (_p$.o = setProp(_el$48, "options", _v$73, _p$.o));
+              _v$74 !== _p$.i && (_p$.i = setProp(_el$48, "selectedIndex", _v$74, _p$.i));
+              _v$75 !== _p$.n && (_p$.n = setProp(_el$48, "selectedBackgroundColor", _v$75, _p$.n));
+              _v$76 !== _p$.s && (_p$.s = setProp(_el$48, "selectedTextColor", _v$76, _p$.s));
+              _v$77 !== _p$.h && (_p$.h = setProp(_el$48, "textColor", _v$77, _p$.h));
+              _v$78 !== _p$.r && (_p$.r = setProp(_el$48, "descriptionColor", _v$78, _p$.r));
+              _v$79 !== _p$.d && (_p$.d = setProp(_el$48, "selectedDescriptionColor", _v$79, _p$.d));
               return _p$;
             }, {
               e: undefined,
@@ -28754,26 +28759,26 @@ ${issue.body || ""}`;
               r: undefined,
               d: undefined
             });
-            return _el$51;
+            return _el$47;
           })();
         })(), null);
         effect((_p$) => {
-          var _v$55 = colors.panel, _v$56 = activeField() === "title" ? colors.primary : colors.border, _v$57 = colors.panelInset, _v$58 = titleValue(), _v$59 = titlePlaceholder(), _v$60 = colors.text, _v$61 = colors.primary, _v$62 = colors.textDim, _v$63 = activeField() === "title", _v$64 = activeField() === "desc" ? colors.primary : colors.border, _v$65 = colors.panelInset, _v$66 = colors.text, _v$67 = colors.primary, _v$68 = colors.textDim, _v$69 = activeField() === "desc";
-          _v$55 !== _p$.e && (_p$.e = setProp(_el$44, "backgroundColor", _v$55, _p$.e));
-          _v$56 !== _p$.t && (_p$.t = setProp(_el$45, "borderColor", _v$56, _p$.t));
-          _v$57 !== _p$.a && (_p$.a = setProp(_el$45, "backgroundColor", _v$57, _p$.a));
-          _v$58 !== _p$.o && (_p$.o = setProp(_el$46, "value", _v$58, _p$.o));
-          _v$59 !== _p$.i && (_p$.i = setProp(_el$46, "placeholder", _v$59, _p$.i));
-          _v$60 !== _p$.n && (_p$.n = setProp(_el$46, "textColor", _v$60, _p$.n));
-          _v$61 !== _p$.s && (_p$.s = setProp(_el$46, "cursorColor", _v$61, _p$.s));
-          _v$62 !== _p$.h && (_p$.h = setProp(_el$46, "placeholderColor", _v$62, _p$.h));
-          _v$63 !== _p$.r && (_p$.r = setProp(_el$46, "focused", _v$63, _p$.r));
-          _v$64 !== _p$.d && (_p$.d = setProp(_el$47, "borderColor", _v$64, _p$.d));
-          _v$65 !== _p$.l && (_p$.l = setProp(_el$47, "backgroundColor", _v$65, _p$.l));
-          _v$66 !== _p$.u && (_p$.u = setProp(_el$48, "textColor", _v$66, _p$.u));
-          _v$67 !== _p$.c && (_p$.c = setProp(_el$48, "cursorColor", _v$67, _p$.c));
-          _v$68 !== _p$.w && (_p$.w = setProp(_el$48, "placeholderColor", _v$68, _p$.w));
-          _v$69 !== _p$.m && (_p$.m = setProp(_el$48, "focused", _v$69, _p$.m));
+          var _v$53 = colors.panel, _v$54 = activeField() === "title" ? colors.primary : colors.border, _v$55 = colors.panelInset, _v$56 = titleValue(), _v$57 = titlePlaceholder(), _v$58 = colors.text, _v$59 = colors.primary, _v$60 = colors.textDim, _v$61 = activeField() === "title", _v$62 = activeField() === "desc" ? colors.primary : colors.border, _v$63 = colors.panelInset, _v$64 = colors.text, _v$65 = colors.primary, _v$66 = colors.textDim, _v$67 = activeField() === "desc";
+          _v$53 !== _p$.e && (_p$.e = setProp(_el$40, "backgroundColor", _v$53, _p$.e));
+          _v$54 !== _p$.t && (_p$.t = setProp(_el$41, "borderColor", _v$54, _p$.t));
+          _v$55 !== _p$.a && (_p$.a = setProp(_el$41, "backgroundColor", _v$55, _p$.a));
+          _v$56 !== _p$.o && (_p$.o = setProp(_el$42, "value", _v$56, _p$.o));
+          _v$57 !== _p$.i && (_p$.i = setProp(_el$42, "placeholder", _v$57, _p$.i));
+          _v$58 !== _p$.n && (_p$.n = setProp(_el$42, "textColor", _v$58, _p$.n));
+          _v$59 !== _p$.s && (_p$.s = setProp(_el$42, "cursorColor", _v$59, _p$.s));
+          _v$60 !== _p$.h && (_p$.h = setProp(_el$42, "placeholderColor", _v$60, _p$.h));
+          _v$61 !== _p$.r && (_p$.r = setProp(_el$42, "focused", _v$61, _p$.r));
+          _v$62 !== _p$.d && (_p$.d = setProp(_el$43, "borderColor", _v$62, _p$.d));
+          _v$63 !== _p$.l && (_p$.l = setProp(_el$43, "backgroundColor", _v$63, _p$.l));
+          _v$64 !== _p$.u && (_p$.u = setProp(_el$44, "textColor", _v$64, _p$.u));
+          _v$65 !== _p$.c && (_p$.c = setProp(_el$44, "cursorColor", _v$65, _p$.c));
+          _v$66 !== _p$.w && (_p$.w = setProp(_el$44, "placeholderColor", _v$66, _p$.w));
+          _v$67 !== _p$.m && (_p$.m = setProp(_el$44, "focused", _v$67, _p$.m));
           return _p$;
         }, {
           e: undefined,
@@ -28792,36 +28797,48 @@ ${issue.body || ""}`;
           w: undefined,
           m: undefined
         });
-        return _el$44;
+        return _el$40;
       })();
     })());
+    insertNode(_el$7, _el$8);
+    insertNode(_el$7, _el$9);
+    setProp(_el$7, "width", "100%");
+    setProp(_el$7, "height", 3);
+    setProp(_el$7, "flexDirection", "row");
+    setProp(_el$7, "justifyContent", "space-between");
+    setProp(_el$7, "alignItems", "center");
+    setProp(_el$7, "paddingLeft", 2);
+    setProp(_el$7, "paddingRight", 2);
+    setProp(_el$7, "borderStyle", "single");
+    setProp(_el$7, "marginTop", 1);
+    setProp(_el$9, "content", "?: help");
     insert(_el$, (() => {
       var _c$2 = memo2(() => !!showAgentModal());
       return () => _c$2() && (() => {
-        var _el$53 = createElement("box"), _el$54 = createElement("text"), _el$55 = createElement("box"), _el$56 = createElement("text"), _el$57 = createElement("box"), _el$58 = createElement("textarea"), _el$59 = createElement("box"), _el$60 = createElement("text"), _el$61 = createElement("text");
+        var _el$49 = createElement("box"), _el$50 = createElement("text"), _el$51 = createElement("box"), _el$52 = createElement("text"), _el$53 = createElement("box"), _el$54 = createElement("textarea"), _el$55 = createElement("box"), _el$56 = createElement("text"), _el$57 = createElement("text");
+        insertNode(_el$49, _el$50);
+        insertNode(_el$49, _el$51);
+        insertNode(_el$49, _el$53);
+        insertNode(_el$49, _el$55);
+        setProp(_el$49, "position", "absolute");
+        setProp(_el$49, "top", 6);
+        setProp(_el$49, "left", 10);
+        setProp(_el$49, "right", 10);
+        setProp(_el$49, "borderStyle", "single");
+        setProp(_el$49, "flexDirection", "column");
+        setProp(_el$49, "padding", 2);
+        setProp(_el$49, "gap", 1);
+        setProp(_el$49, "zIndex", 1000);
+        setProp(_el$50, "content", `Create Agent Task from Issue`);
+        insertNode(_el$51, _el$52);
+        setProp(_el$51, "height", 3);
+        setProp(_el$51, "marginTop", 1);
+        setProp(_el$51, "marginBottom", 1);
+        setProp(_el$52, "wrapMode", "word");
         insertNode(_el$53, _el$54);
-        insertNode(_el$53, _el$55);
-        insertNode(_el$53, _el$57);
-        insertNode(_el$53, _el$59);
-        setProp(_el$53, "position", "absolute");
-        setProp(_el$53, "top", 6);
-        setProp(_el$53, "left", 10);
-        setProp(_el$53, "right", 10);
+        setProp(_el$53, "height", 8);
         setProp(_el$53, "borderStyle", "single");
-        setProp(_el$53, "flexDirection", "column");
-        setProp(_el$53, "padding", 2);
-        setProp(_el$53, "gap", 1);
-        setProp(_el$53, "zIndex", 1000);
-        setProp(_el$54, "content", `Create Agent Task from Issue`);
-        insertNode(_el$55, _el$56);
-        setProp(_el$55, "height", 3);
-        setProp(_el$55, "marginTop", 1);
-        setProp(_el$55, "marginBottom", 1);
-        setProp(_el$56, "wrapMode", "word");
-        insertNode(_el$57, _el$58);
-        setProp(_el$57, "height", 8);
-        setProp(_el$57, "borderStyle", "single");
-        setProp(_el$57, "padding", 1);
+        setProp(_el$53, "padding", 1);
         use((renderable) => {
           agentModalTextarea = renderable;
           if (!renderable)
@@ -28829,38 +28846,38 @@ ${issue.body || ""}`;
           if (renderable.plainText !== agentInstructions()) {
             renderable.setText(agentInstructions());
           }
-        }, _el$58);
-        setProp(_el$58, "flexGrow", 1);
-        setProp(_el$58, "placeholder", "Optional: Add custom instructions for the agent...");
-        setProp(_el$58, "backgroundColor", "transparent");
-        setProp(_el$58, "focusedBackgroundColor", "transparent");
-        setProp(_el$58, "wrapMode", "word");
-        setProp(_el$58, "focused", true);
-        setProp(_el$58, "onContentChange", () => {
+        }, _el$54);
+        setProp(_el$54, "flexGrow", 1);
+        setProp(_el$54, "placeholder", "Optional: Add custom instructions for the agent...");
+        setProp(_el$54, "backgroundColor", "transparent");
+        setProp(_el$54, "focusedBackgroundColor", "transparent");
+        setProp(_el$54, "wrapMode", "word");
+        setProp(_el$54, "focused", true);
+        setProp(_el$54, "onContentChange", () => {
           setAgentInstructions(agentModalTextarea?.plainText || "");
         });
-        insertNode(_el$59, _el$60);
-        insertNode(_el$59, _el$61);
-        setProp(_el$59, "marginTop", 1);
-        setProp(_el$59, "flexDirection", "row");
-        setProp(_el$59, "gap", 2);
-        setProp(_el$60, "content", "enter: create");
-        setProp(_el$61, "content", "esc: cancel");
+        insertNode(_el$55, _el$56);
+        insertNode(_el$55, _el$57);
+        setProp(_el$55, "marginTop", 1);
+        setProp(_el$55, "flexDirection", "row");
+        setProp(_el$55, "gap", 2);
+        setProp(_el$56, "content", "enter: create");
+        setProp(_el$57, "content", "esc: cancel");
         effect((_p$) => {
-          var { primary: _v$82, panel: _v$83, primary: _v$84 } = colors, _v$85 = TextAttributes.BOLD, _v$86 = colors.textMuted, _v$87 = `Issue: #${agentModalIssue()?.remoteNumber || agentModalIssue()?.id.slice(0, 8)} - ${agentModalIssue()?.title}`, _v$88 = colors.border, _v$89 = colors.panelInset, _v$90 = colors.text, _v$91 = colors.primary, _v$92 = colors.textDim, _v$93 = colors.textDim, _v$94 = colors.textDim;
-          _v$82 !== _p$.e && (_p$.e = setProp(_el$53, "borderColor", _v$82, _p$.e));
-          _v$83 !== _p$.t && (_p$.t = setProp(_el$53, "backgroundColor", _v$83, _p$.t));
-          _v$84 !== _p$.a && (_p$.a = setProp(_el$54, "fg", _v$84, _p$.a));
-          _v$85 !== _p$.o && (_p$.o = setProp(_el$54, "attributes", _v$85, _p$.o));
-          _v$86 !== _p$.i && (_p$.i = setProp(_el$56, "fg", _v$86, _p$.i));
-          _v$87 !== _p$.n && (_p$.n = setProp(_el$56, "content", _v$87, _p$.n));
-          _v$88 !== _p$.s && (_p$.s = setProp(_el$57, "borderColor", _v$88, _p$.s));
-          _v$89 !== _p$.h && (_p$.h = setProp(_el$57, "backgroundColor", _v$89, _p$.h));
-          _v$90 !== _p$.r && (_p$.r = setProp(_el$58, "textColor", _v$90, _p$.r));
-          _v$91 !== _p$.d && (_p$.d = setProp(_el$58, "cursorColor", _v$91, _p$.d));
-          _v$92 !== _p$.l && (_p$.l = setProp(_el$58, "placeholderColor", _v$92, _p$.l));
-          _v$93 !== _p$.u && (_p$.u = setProp(_el$60, "fg", _v$93, _p$.u));
-          _v$94 !== _p$.c && (_p$.c = setProp(_el$61, "fg", _v$94, _p$.c));
+          var { primary: _v$80, panel: _v$81, primary: _v$82 } = colors, _v$83 = TextAttributes.BOLD, _v$84 = colors.textMuted, _v$85 = `Issue: #${agentModalIssue()?.remoteNumber || agentModalIssue()?.id.slice(0, 8)} - ${agentModalIssue()?.title}`, _v$86 = colors.border, _v$87 = colors.panelInset, _v$88 = colors.text, _v$89 = colors.primary, _v$90 = colors.textDim, _v$91 = colors.textDim, _v$92 = colors.textDim;
+          _v$80 !== _p$.e && (_p$.e = setProp(_el$49, "borderColor", _v$80, _p$.e));
+          _v$81 !== _p$.t && (_p$.t = setProp(_el$49, "backgroundColor", _v$81, _p$.t));
+          _v$82 !== _p$.a && (_p$.a = setProp(_el$50, "fg", _v$82, _p$.a));
+          _v$83 !== _p$.o && (_p$.o = setProp(_el$50, "attributes", _v$83, _p$.o));
+          _v$84 !== _p$.i && (_p$.i = setProp(_el$52, "fg", _v$84, _p$.i));
+          _v$85 !== _p$.n && (_p$.n = setProp(_el$52, "content", _v$85, _p$.n));
+          _v$86 !== _p$.s && (_p$.s = setProp(_el$53, "borderColor", _v$86, _p$.s));
+          _v$87 !== _p$.h && (_p$.h = setProp(_el$53, "backgroundColor", _v$87, _p$.h));
+          _v$88 !== _p$.r && (_p$.r = setProp(_el$54, "textColor", _v$88, _p$.r));
+          _v$89 !== _p$.d && (_p$.d = setProp(_el$54, "cursorColor", _v$89, _p$.d));
+          _v$90 !== _p$.l && (_p$.l = setProp(_el$54, "placeholderColor", _v$90, _p$.l));
+          _v$91 !== _p$.u && (_p$.u = setProp(_el$56, "fg", _v$91, _p$.u));
+          _v$92 !== _p$.c && (_p$.c = setProp(_el$57, "fg", _v$92, _p$.c));
           return _p$;
         }, {
           e: undefined,
@@ -28877,19 +28894,176 @@ ${issue.body || ""}`;
           u: undefined,
           c: undefined
         });
-        return _el$53;
+        return _el$49;
+      })();
+    })(), null);
+    insert(_el$, (() => {
+      var _c$3 = memo2(() => !!showHelpModal());
+      return () => _c$3() && (() => {
+        var _el$58 = createElement("box"), _el$59 = createElement("text"), _el$60 = createElement("scrollbox"), _el$61 = createElement("box"), _el$62 = createElement("text"), _el$63 = createElement("text"), _el$64 = createElement("text"), _el$65 = createElement("box"), _el$66 = createElement("text"), _el$67 = createElement("text"), _el$68 = createElement("text"), _el$69 = createElement("box"), _el$70 = createElement("text"), _el$71 = createElement("text"), _el$72 = createElement("text"), _el$73 = createElement("text"), _el$74 = createElement("text"), _el$75 = createElement("text"), _el$76 = createElement("box"), _el$77 = createElement("text"), _el$78 = createElement("text"), _el$79 = createElement("text"), _el$80 = createElement("box"), _el$81 = createElement("text"), _el$82 = createElement("text"), _el$83 = createElement("text"), _el$84 = createElement("box"), _el$85 = createElement("text"), _el$86 = createElement("text"), _el$87 = createElement("text"), _el$88 = createElement("text"), _el$89 = createElement("box"), _el$90 = createElement("text");
+        insertNode(_el$58, _el$59);
+        insertNode(_el$58, _el$60);
+        insertNode(_el$58, _el$89);
+        setProp(_el$58, "position", "absolute");
+        setProp(_el$58, "top", 4);
+        setProp(_el$58, "left", 10);
+        setProp(_el$58, "right", 10);
+        setProp(_el$58, "borderStyle", "single");
+        setProp(_el$58, "flexDirection", "column");
+        setProp(_el$58, "padding", 2);
+        setProp(_el$58, "gap", 1);
+        setProp(_el$58, "zIndex", 1000);
+        setProp(_el$59, "content", "\u2328\uFE0F  Keyboard Shortcuts");
+        insertNode(_el$60, _el$61);
+        insertNode(_el$60, _el$65);
+        insertNode(_el$60, _el$69);
+        insertNode(_el$60, _el$76);
+        insertNode(_el$60, _el$80);
+        insertNode(_el$60, _el$84);
+        setProp(_el$60, "height", 14);
+        setProp(_el$60, "focused", true);
+        setProp(_el$60, "gap", 1);
+        setProp(_el$60, "marginTop", 1);
+        insertNode(_el$61, _el$62);
+        insertNode(_el$61, _el$63);
+        insertNode(_el$61, _el$64);
+        setProp(_el$61, "flexDirection", "column");
+        setProp(_el$61, "gap", 1);
+        setProp(_el$62, "content", "Global");
+        setProp(_el$63, "content", "  q           Quit application");
+        setProp(_el$64, "content", "  ?           Show this help");
+        insertNode(_el$65, _el$66);
+        insertNode(_el$65, _el$67);
+        insertNode(_el$65, _el$68);
+        setProp(_el$65, "flexDirection", "column");
+        setProp(_el$65, "gap", 1);
+        setProp(_el$65, "marginTop", 1);
+        setProp(_el$66, "content", "List Mode - Navigation");
+        setProp(_el$67, "content", "  tab         Switch Issues/Agents tabs");
+        setProp(_el$68, "content", "  j/k or \u2191/\u2193  Navigate list items");
+        insertNode(_el$69, _el$70);
+        insertNode(_el$69, _el$71);
+        insertNode(_el$69, _el$72);
+        insertNode(_el$69, _el$73);
+        insertNode(_el$69, _el$74);
+        insertNode(_el$69, _el$75);
+        setProp(_el$69, "flexDirection", "column");
+        setProp(_el$69, "gap", 1);
+        setProp(_el$69, "marginTop", 1);
+        setProp(_el$70, "content", "List Mode - Issues");
+        setProp(_el$71, "content", "  space       View issue details");
+        setProp(_el$72, "content", "  n           Create new issue");
+        setProp(_el$73, "content", "  e           Edit issue");
+        setProp(_el$74, "content", "  x           Close/reopen issue");
+        setProp(_el$75, "content", "  a           Assign to agent");
+        insertNode(_el$76, _el$77);
+        insertNode(_el$76, _el$78);
+        insertNode(_el$76, _el$79);
+        setProp(_el$76, "flexDirection", "column");
+        setProp(_el$76, "gap", 1);
+        setProp(_el$76, "marginTop", 1);
+        setProp(_el$77, "content", "List Mode - Agents");
+        setProp(_el$78, "content", "  enter       View task logs");
+        setProp(_el$79, "content", "  r           Refresh tasks");
+        insertNode(_el$80, _el$81);
+        insertNode(_el$80, _el$82);
+        insertNode(_el$80, _el$83);
+        setProp(_el$80, "flexDirection", "column");
+        setProp(_el$80, "gap", 1);
+        setProp(_el$80, "marginTop", 1);
+        setProp(_el$81, "content", "Read Mode");
+        setProp(_el$82, "content", "  a           Assign to agent");
+        setProp(_el$83, "content", "  esc or q    Back to list");
+        insertNode(_el$84, _el$85);
+        insertNode(_el$84, _el$86);
+        insertNode(_el$84, _el$87);
+        insertNode(_el$84, _el$88);
+        setProp(_el$84, "flexDirection", "column");
+        setProp(_el$84, "gap", 1);
+        setProp(_el$84, "marginTop", 1);
+        setProp(_el$85, "content", "Edit Mode");
+        setProp(_el$86, "content", "  tab         Navigate fields");
+        setProp(_el$87, "content", "  enter       Save issue");
+        setProp(_el$88, "content", "  esc         Cancel");
+        insertNode(_el$89, _el$90);
+        setProp(_el$89, "marginTop", 1);
+        setProp(_el$89, "flexDirection", "row");
+        setProp(_el$89, "gap", 2);
+        setProp(_el$90, "content", "esc, q, or ?: close | \u2191/\u2193: scroll");
+        effect((_p$) => {
+          var { primary: _v$93, panel: _v$94, primary: _v$95 } = colors, _v$96 = TextAttributes.BOLD, _v$97 = colors.textStrong, _v$98 = colors.text, _v$99 = colors.text, _v$100 = colors.textStrong, _v$101 = colors.text, _v$102 = colors.text, _v$103 = colors.textStrong, _v$104 = colors.text, _v$105 = colors.text, _v$106 = colors.text, _v$107 = colors.text, _v$108 = colors.text, _v$109 = colors.textStrong, _v$110 = colors.text, _v$111 = colors.text, _v$112 = colors.textStrong, _v$113 = colors.text, _v$114 = colors.text, _v$115 = colors.textStrong, _v$116 = colors.text, _v$117 = colors.text, _v$118 = colors.text, _v$119 = colors.textDim;
+          _v$93 !== _p$.e && (_p$.e = setProp(_el$58, "borderColor", _v$93, _p$.e));
+          _v$94 !== _p$.t && (_p$.t = setProp(_el$58, "backgroundColor", _v$94, _p$.t));
+          _v$95 !== _p$.a && (_p$.a = setProp(_el$59, "fg", _v$95, _p$.a));
+          _v$96 !== _p$.o && (_p$.o = setProp(_el$59, "attributes", _v$96, _p$.o));
+          _v$97 !== _p$.i && (_p$.i = setProp(_el$62, "fg", _v$97, _p$.i));
+          _v$98 !== _p$.n && (_p$.n = setProp(_el$63, "fg", _v$98, _p$.n));
+          _v$99 !== _p$.s && (_p$.s = setProp(_el$64, "fg", _v$99, _p$.s));
+          _v$100 !== _p$.h && (_p$.h = setProp(_el$66, "fg", _v$100, _p$.h));
+          _v$101 !== _p$.r && (_p$.r = setProp(_el$67, "fg", _v$101, _p$.r));
+          _v$102 !== _p$.d && (_p$.d = setProp(_el$68, "fg", _v$102, _p$.d));
+          _v$103 !== _p$.l && (_p$.l = setProp(_el$70, "fg", _v$103, _p$.l));
+          _v$104 !== _p$.u && (_p$.u = setProp(_el$71, "fg", _v$104, _p$.u));
+          _v$105 !== _p$.c && (_p$.c = setProp(_el$72, "fg", _v$105, _p$.c));
+          _v$106 !== _p$.w && (_p$.w = setProp(_el$73, "fg", _v$106, _p$.w));
+          _v$107 !== _p$.m && (_p$.m = setProp(_el$74, "fg", _v$107, _p$.m));
+          _v$108 !== _p$.f && (_p$.f = setProp(_el$75, "fg", _v$108, _p$.f));
+          _v$109 !== _p$.y && (_p$.y = setProp(_el$77, "fg", _v$109, _p$.y));
+          _v$110 !== _p$.g && (_p$.g = setProp(_el$78, "fg", _v$110, _p$.g));
+          _v$111 !== _p$.p && (_p$.p = setProp(_el$79, "fg", _v$111, _p$.p));
+          _v$112 !== _p$.b && (_p$.b = setProp(_el$81, "fg", _v$112, _p$.b));
+          _v$113 !== _p$.T && (_p$.T = setProp(_el$82, "fg", _v$113, _p$.T));
+          _v$114 !== _p$.A && (_p$.A = setProp(_el$83, "fg", _v$114, _p$.A));
+          _v$115 !== _p$.O && (_p$.O = setProp(_el$85, "fg", _v$115, _p$.O));
+          _v$116 !== _p$.I && (_p$.I = setProp(_el$86, "fg", _v$116, _p$.I));
+          _v$117 !== _p$.S && (_p$.S = setProp(_el$87, "fg", _v$117, _p$.S));
+          _v$118 !== _p$.W && (_p$.W = setProp(_el$88, "fg", _v$118, _p$.W));
+          _v$119 !== _p$.C && (_p$.C = setProp(_el$90, "fg", _v$119, _p$.C));
+          return _p$;
+        }, {
+          e: undefined,
+          t: undefined,
+          a: undefined,
+          o: undefined,
+          i: undefined,
+          n: undefined,
+          s: undefined,
+          h: undefined,
+          r: undefined,
+          d: undefined,
+          l: undefined,
+          u: undefined,
+          c: undefined,
+          w: undefined,
+          m: undefined,
+          f: undefined,
+          y: undefined,
+          g: undefined,
+          p: undefined,
+          b: undefined,
+          T: undefined,
+          A: undefined,
+          O: undefined,
+          I: undefined,
+          S: undefined,
+          W: undefined,
+          C: undefined
+        });
+        return _el$58;
       })();
     })(), null);
     effect((_p$) => {
-      var { background: _v$, border: _v$2, primary: _v$3 } = colors, _v$4 = TextAttributes.BOLD, _v$5 = colors.textMuted, _v$6 = props.state.providerLabel(), _v$7 = colors.textDim, _v$8 = hintText();
+      var { background: _v$, border: _v$2, primary: _v$3 } = colors, _v$4 = TextAttributes.BOLD, _v$5 = colors.textMuted, _v$6 = props.state.providerLabel(), _v$7 = colors.border, _v$8 = colors.textDim, _v$9 = bottomHintLeft(), _v$0 = colors.textDim;
       _v$ !== _p$.e && (_p$.e = setProp(_el$, "backgroundColor", _v$, _p$.e));
       _v$2 !== _p$.t && (_p$.t = setProp(_el$2, "borderColor", _v$2, _p$.t));
       _v$3 !== _p$.a && (_p$.a = setProp(_el$4, "fg", _v$3, _p$.a));
       _v$4 !== _p$.o && (_p$.o = setProp(_el$4, "attributes", _v$4, _p$.o));
       _v$5 !== _p$.i && (_p$.i = setProp(_el$5, "fg", _v$5, _p$.i));
       _v$6 !== _p$.n && (_p$.n = setProp(_el$5, "content", _v$6, _p$.n));
-      _v$7 !== _p$.s && (_p$.s = setProp(_el$6, "fg", _v$7, _p$.s));
-      _v$8 !== _p$.h && (_p$.h = setProp(_el$6, "content", _v$8, _p$.h));
+      _v$7 !== _p$.s && (_p$.s = setProp(_el$7, "borderColor", _v$7, _p$.s));
+      _v$8 !== _p$.h && (_p$.h = setProp(_el$8, "fg", _v$8, _p$.h));
+      _v$9 !== _p$.r && (_p$.r = setProp(_el$8, "content", _v$9, _p$.r));
+      _v$0 !== _p$.d && (_p$.d = setProp(_el$9, "fg", _v$0, _p$.d));
       return _p$;
     }, {
       e: undefined,
@@ -28899,7 +29073,9 @@ ${issue.body || ""}`;
       i: undefined,
       n: undefined,
       s: undefined,
-      h: undefined
+      h: undefined,
+      r: undefined,
+      d: undefined
     });
     return _el$;
   })();
@@ -28974,7 +29150,7 @@ function createAppState(store, agentTaskStore, provider) {
 
 // src/store/index.ts
 import { resolve as resolve5 } from "path";
-var STORE_FILE = ".openissue/issues.json";
+var STORE_FILE = ".ideae/issues.json";
 function createStore(cwd) {
   const filePath = resolve5(cwd, STORE_FILE);
   let issues = [];
@@ -28998,7 +29174,7 @@ function createStore(cwd) {
       return issues.find((i) => i.id === id);
     },
     async save() {
-      const dir = resolve5(cwd, ".openissue");
+      const dir = resolve5(cwd, ".ideae");
       await Bun.write(resolve5(dir, ".gitkeep"), "");
       await Bun.write(filePath, JSON.stringify(issues, null, 2));
     },
@@ -29018,7 +29194,7 @@ function createStore(cwd) {
 
 // src/store/agents.ts
 import { resolve as resolve6 } from "path";
-var STORE_FILE2 = ".openissue/agent-tasks.json";
+var STORE_FILE2 = ".ideae/agent-tasks.json";
 function createAgentTaskStore(cwd) {
   const filePath = resolve6(cwd, STORE_FILE2);
   let tasks = [];
@@ -29045,7 +29221,7 @@ function createAgentTaskStore(cwd) {
       return tasks.filter((t2) => t2.pullRequestNumber === prNumber);
     },
     async save() {
-      const dir = resolve6(cwd, ".openissue");
+      const dir = resolve6(cwd, ".ideae");
       await Bun.write(resolve6(dir, ".gitkeep"), "");
       await Bun.write(filePath, JSON.stringify(tasks, null, 2));
     },
@@ -29288,7 +29464,7 @@ function createGitLabProvider(repo) {
 import { resolve as resolve7 } from "path";
 async function main2() {
   const cwd = process.cwd();
-  const dir = resolve7(cwd, ".openissue");
+  const dir = resolve7(cwd, ".ideae");
   try {
     await Bun.write(resolve7(dir, ".gitkeep"), "");
   } catch {}
@@ -29302,12 +29478,17 @@ async function main2() {
     provider = createProvider2(detected.type, detected.repo);
   }
   const state = createAppState(store, agentTaskStore, provider);
+  const cleanup = () => {
+    process.exit(0);
+  };
+  process.on("SIGINT", cleanup);
+  process.on("SIGTERM", cleanup);
   render(() => createComponent2(App, {
     state,
     cwd
   }));
 }
 main2().catch((err) => {
-  console.error("openissue error:", err);
+  console.error("ideae error:", err);
   process.exit(1);
 });

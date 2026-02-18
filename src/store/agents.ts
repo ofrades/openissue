@@ -1,7 +1,7 @@
 import type { AgentTask, AgentTaskStore } from "../types.ts"
 import { resolve } from "node:path"
 
-const STORE_FILE = ".openissue/agent-tasks.json"
+const STORE_FILE = ".ideae/agent-tasks.json"
 
 export function createAgentTaskStore(cwd: string): AgentTaskStore {
   const filePath = resolve(cwd, STORE_FILE)
@@ -35,7 +35,7 @@ export function createAgentTaskStore(cwd: string): AgentTaskStore {
     },
 
     async save() {
-      const dir = resolve(cwd, ".openissue")
+      const dir = resolve(cwd, ".ideae")
       await Bun.write(resolve(dir, ".gitkeep"), "")
       await Bun.write(filePath, JSON.stringify(tasks, null, 2))
     },

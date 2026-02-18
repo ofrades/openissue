@@ -1,4 +1,4 @@
-// Issue and store types for openissue
+// Issue and store types for ideae
 
 export interface FileRef {
   path: string

@@ -13,7 +13,7 @@ export function Header(props: { state: AppState }) {
       <text
         fg="#7c3aed"
         attributes={TextAttributes.BOLD}
-        content="🐛 openissue"
+        content="🐛 ideae"
       />
       <text fg="#8b949e" content={props.state.providerLabel()} />
     </box>

@@ -39,6 +39,7 @@ export function App(props: { state: AppState; cwd: string }) {
     null,
   );
   const [agentInstructions, setAgentInstructions] = createSignal("");
+  const [showHelpModal, setShowHelpModal] = createSignal(false);
   let suggestionSeq = 0;
 
   const colors = {
@@ -317,17 +318,39 @@ export function App(props: { state: AppState; cwd: string }) {
       return;
     }
 
+    // Handle help modal
+    if (showHelpModal()) {
+      if (keyName === "escape" || keyName === "q" || keyName === "?") {
+        key.preventDefault();
+        setShowHelpModal(false);
+        return;
+      }
+      // Don't handle other keys when help modal is open
+      return;
+    }
+
     if (key.ctrl && key.name === "c") {
-      renderer.destroy();
+      setShouldExit(true);
+      // Delay destroy to allow cleanup
+      setTimeout(() => renderer.destroy(), 10);
       return;
     }
 
     if (keyName === "q") {
-      renderer.destroy();
+      setShouldExit(true);
+      // Delay destroy to allow cleanup
+      setTimeout(() => renderer.destroy(), 10);
       return;
     }
 
-    // Toggle between issues and agents in list mode OR assign issue to agent
+    // Show help modal
+    if (keyName === "?") {
+      key.preventDefault();
+      setShowHelpModal(true);
+      return;
+    }
+
+    // 'a' key to assign issue to agent (when on issues)
     if (mode() === "list" && keyName === "a") {
       key.preventDefault();
       if (viewMode() === "issues") {
@@ -337,20 +360,12 @@ export function App(props: { state: AppState; cwd: string }) {
           setAgentModalIssue(issue);
           setAgentInstructions("");
           setShowAgentModal(true);
-        } else {
-          // If no issue selected, toggle to agents view
-          setViewMode("agents");
-          setSelectedIndex(0);
         }
-      } else {
-        // If on agents view, toggle back to issues
-        setViewMode("issues");
-        setSelectedIndex(0);
       }
       return;
     }
 
-    // Tab key to toggle view mode quickly
+    // Tab key to switch between Issues and Agents views
     if (mode() === "list" && keyName === "tab") {
       key.preventDefault();
       setViewMode(viewMode() === "issues" ? "agents" : "issues");
@@ -918,7 +933,7 @@ export function App(props: { state: AppState; cwd: string }) {
 
   async function saveImage(bytes: Uint8Array, extension: string) {
     try {
-      const dir = resolve(props.cwd, ".openissue", "images");
+      const dir = resolve(props.cwd, ".ideae", "images");
       await mkdir(dir, { recursive: true });
       const filename = `paste-${Date.now()}.${extension}`;
       const filePath = resolve(dir, filename);
@@ -962,14 +977,27 @@ export function App(props: { state: AppState; cwd: string }) {
   const hintText = () => {
     if (mode() === "list") {
       if (viewMode() === "agents") {
-        return "tab/a: issues  r: refresh  j/k: nav  enter: logs  q: quit";
+        return "j/k: nav  enter: logs  ?: help";
       }
-      return "n: new  a: assign  tab: agents  space: view  e: edit  x: close  q: quit";
+      return "j/k: nav  space: view  ?: help";
     }
     if (mode() === "read") {
-      return "a: assign to agent  esc/q: back";
+      return "esc/q: back  ?: help";
     }
-    return "tab: navigate  enter: save  esc: cancel";
+    return "tab: navigate  ?: help";
+  };
+
+  const bottomHintLeft = () => {
+    if (mode() === "list") {
+      if (viewMode() === "agents") {
+        return "tab: switch | j/k: nav | enter: logs";
+      }
+      return "tab: switch | j/k: nav | space: view | n: new";
+    }
+    if (mode() === "read") {
+      return "esc/q: back";
+    }
+    return "tab: navigate";
   };
 
   const titlePlaceholder = () =>
@@ -990,8 +1018,6 @@ export function App(props: { state: AppState; cwd: string }) {
         alignItems="center"
         paddingLeft={2}
         paddingRight={2}
-        paddingTop={1}
-        paddingBottom={1}
         borderStyle="single"
         borderColor={colors.border}
       >
@@ -999,11 +1025,10 @@ export function App(props: { state: AppState; cwd: string }) {
           <text
             fg={colors.primary}
             attributes={TextAttributes.BOLD}
-            content="📋 openissue"
+            content="📋 ideae"
           />
           <text fg={colors.textMuted} content={props.state.providerLabel()} />
         </box>
-        <text fg={colors.textDim} content={hintText()} />
       </box>
 
       <box width="100%" flexGrow={1}>
@@ -1014,22 +1039,45 @@ export function App(props: { state: AppState; cwd: string }) {
             backgroundColor={colors.panel}
             flexDirection="column"
           >
+            {/* Tabs for Issues/Agents navigation */}
             <box
               flexDirection="row"
               justifyContent="space-between"
               alignItems="center"
               paddingLeft={2}
               paddingRight={2}
-              paddingTop={1}
-              paddingBottom={1}
+              borderStyle="single"
+              borderColor={colors.border}
             >
-              {viewMode() === "issues" ? (
-                <>
-                  <box flexDirection="row" gap={3}>
-                    <text
-                      fg={colors.textMuted}
-                      content={`Total ${stats().total}`}
-                    />
+              <box flexDirection="row" gap={2}>
+                <text
+                  fg={
+                    viewMode() === "issues" ? colors.primary : colors.textMuted
+                  }
+                  attributes={
+                    viewMode() === "issues"
+                      ? TextAttributes.BOLD
+                      : TextAttributes.NONE
+                  }
+                  content={viewMode() === "issues" ? "● Issues" : "○ Issues"}
+                />
+                <text
+                  fg={
+                    viewMode() === "agents"
+                      ? colors.primaryBright
+                      : colors.textMuted
+                  }
+                  attributes={
+                    viewMode() === "agents"
+                      ? TextAttributes.BOLD
+                      : TextAttributes.NONE
+                  }
+                  content={viewMode() === "agents" ? "● Agents" : "○ Agents"}
+                />
+              </box>
+              <box flexDirection="row" gap={3}>
+                {viewMode() === "issues" ? (
+                  <>
                     <text
                       fg={colors.primary}
                       content={`Open ${stats().open}`}
@@ -1038,25 +1086,9 @@ export function App(props: { state: AppState; cwd: string }) {
                       fg={colors.textMuted}
                       content={`Closed ${stats().closed}`}
                     />
-                  </box>
-                  <box flexDirection="row" gap={3}>
-                    <text
-                      fg={colors.textMuted}
-                      content={`Synced ${stats().synced}`}
-                    />
-                    <text
-                      fg={colors.textMuted}
-                      content={`Local ${stats().local}`}
-                    />
-                  </box>
-                </>
-              ) : (
-                <>
-                  <box flexDirection="row" gap={3}>
-                    <text
-                      fg={colors.textMuted}
-                      content={`Total ${agentStats().total}`}
-                    />
+                  </>
+                ) : (
+                  <>
                     <text
                       fg={colors.primaryBright}
                       content={`Active ${agentStats().active}`}
@@ -1065,26 +1097,16 @@ export function App(props: { state: AppState; cwd: string }) {
                       fg={colors.primary}
                       content={`Done ${agentStats().completed}`}
                     />
-                  </box>
-                  <box flexDirection="row" gap={3}>
-                    <text
-                      fg={colors.textDim}
-                      content={`Failed ${agentStats().failed}`}
-                    />
-                    <text
-                      fg={colors.textMuted}
-                      content={`Draft ${agentStats().draft}`}
-                    />
-                  </box>
-                </>
-              )}
+                  </>
+                )}
+              </box>
             </box>
             <box height={1} paddingLeft={2}>
               {message() && <text fg={colors.primary} content={message()} />}
             </box>
             {viewMode() === "issues" ? (
               issueOptions().length === 0 ? (
-                <box paddingLeft={2} paddingTop={2}>
+                <box>
                   <text
                     fg={colors.textDim}
                     content="No todos yet. Press 'n' to create one."
@@ -1110,7 +1132,7 @@ export function App(props: { state: AppState; cwd: string }) {
                 />
               )
             ) : agentTaskOptions().length === 0 ? (
-              <box paddingLeft={2} paddingTop={2}>
+              <box>
                 <text
                   fg={colors.textDim}
                   content="No agent tasks yet. Press 'n' to create one or 'r' to refresh."
@@ -1352,6 +1374,23 @@ export function App(props: { state: AppState; cwd: string }) {
         )}
       </box>
 
+      {/* Bottom Panel - Quick Keys */}
+      <box
+        width="100%"
+        height={3}
+        flexDirection="row"
+        justifyContent="space-between"
+        alignItems="center"
+        paddingLeft={2}
+        paddingRight={2}
+        borderStyle="single"
+        borderColor={colors.border}
+        marginTop={1}
+      >
+        <text fg={colors.textDim} content={bottomHintLeft()} />
+        <text fg={colors.textDim} content="?: help" />
+      </box>
+
       {/* Agent Task Creation Modal */}
       {showAgentModal() && (
         <box
@@ -1414,6 +1453,90 @@ export function App(props: { state: AppState; cwd: string }) {
           <box marginTop={1} flexDirection="row" gap={2}>
             <text fg={colors.textDim} content="enter: create" />
             <text fg={colors.textDim} content="esc: cancel" />
+          </box>
+        </box>
+      )}
+
+      {/* Help Modal */}
+      {showHelpModal() && (
+        <box
+          position="absolute"
+          top={4}
+          left={10}
+          right={10}
+          borderStyle="single"
+          borderColor={colors.primary}
+          backgroundColor={colors.panel}
+          flexDirection="column"
+          padding={2}
+          gap={1}
+          zIndex={1000}
+        >
+          <text
+            fg={colors.primary}
+            attributes={TextAttributes.BOLD}
+            content="⌨️  Keyboard Shortcuts"
+          />
+
+          <scrollbox height={14} focused gap={1} marginTop={1}>
+            <box flexDirection="column" gap={1}>
+              <text fg={colors.textStrong} content="Global" />
+              <text fg={colors.text} content="  q           Quit application" />
+              <text fg={colors.text} content="  ?           Show this help" />
+            </box>
+
+            <box flexDirection="column" gap={1} marginTop={1}>
+              <text fg={colors.textStrong} content="List Mode - Navigation" />
+              <text
+                fg={colors.text}
+                content="  tab         Switch Issues/Agents tabs"
+              />
+              <text
+                fg={colors.text}
+                content="  j/k or ↑/↓  Navigate list items"
+              />
+            </box>
+
+            <box flexDirection="column" gap={1} marginTop={1}>
+              <text fg={colors.textStrong} content="List Mode - Issues" />
+              <text
+                fg={colors.text}
+                content="  space       View issue details"
+              />
+              <text fg={colors.text} content="  n           Create new issue" />
+              <text fg={colors.text} content="  e           Edit issue" />
+              <text
+                fg={colors.text}
+                content="  x           Close/reopen issue"
+              />
+              <text fg={colors.text} content="  a           Assign to agent" />
+            </box>
+
+            <box flexDirection="column" gap={1} marginTop={1}>
+              <text fg={colors.textStrong} content="List Mode - Agents" />
+              <text fg={colors.text} content="  enter       View task logs" />
+              <text fg={colors.text} content="  r           Refresh tasks" />
+            </box>
+
+            <box flexDirection="column" gap={1} marginTop={1}>
+              <text fg={colors.textStrong} content="Read Mode" />
+              <text fg={colors.text} content="  a           Assign to agent" />
+              <text fg={colors.text} content="  esc or q    Back to list" />
+            </box>
+
+            <box flexDirection="column" gap={1} marginTop={1}>
+              <text fg={colors.textStrong} content="Edit Mode" />
+              <text fg={colors.text} content="  tab         Navigate fields" />
+              <text fg={colors.text} content="  enter       Save issue" />
+              <text fg={colors.text} content="  esc         Cancel" />
+            </box>
+          </scrollbox>
+
+          <box marginTop={1} flexDirection="row" gap={2}>
+            <text
+              fg={colors.textDim}
+              content="esc, q, or ?: close | ↑/↓: scroll"
+            />
           </box>
         </box>
       )}

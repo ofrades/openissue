@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# openissue installer script
+# ideae installer script
 set -e
 
 # Colors
@@ -8,7 +8,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}Installing openissue...${NC}"
+echo -e "${GREEN}Installing ideae...${NC}"
 
 # Check if bun is installed
 if ! command -v bun &> /dev/null; then
@@ -21,27 +21,27 @@ fi
 # Check if gh or glab is installed
 if ! command -v gh &> /dev/null && ! command -v glab &> /dev/null; then
     echo -e "${YELLOW}Warning: Neither 'gh' nor 'glab' CLI is installed.${NC}"
-    echo "openissue requires one of these to interact with GitHub/GitLab:"
+    echo "ideae requires one of these to interact with GitHub/GitLab:"
     echo "  GitHub CLI: https://cli.github.com/"
     echo "  GitLab CLI: https://gitlab.com/gitlab-org/cli"
     echo ""
-    echo -e "${YELLOW}Installation will continue, but you'll need to install one before using openissue.${NC}"
+    echo -e "${YELLOW}Installation will continue, but you'll need to install one before using ideae.${NC}"
     echo ""
 fi
 
-# Install openissue globally
+# Install ideae globally
 echo "Installing from GitHub..."
 # Remove old version if it exists
-bun remove -g openissue 2>/dev/null || true
-bun install -g github:ofrades/openissue
+bun remove -g ideae 2>/dev/null || true
+bun install -g github:ofrades/ideae
 
 # Verify installation
-if command -v openissue &> /dev/null; then
-    echo -e "${GREEN}✓ openissue installed successfully!${NC}"
+if command -v ideae &> /dev/null; then
+    echo -e "${GREEN}✓ ideae installed successfully!${NC}"
     echo ""
     echo "Usage:"
     echo "  cd your-project"
-    echo "  openissue"
+    echo "  ideae"
     echo ""
     echo "Keyboard shortcuts:"
     echo "  n: new issue"
@@ -50,7 +50,7 @@ if command -v openissue &> /dev/null; then
     echo "  x: close/reopen"
     echo "  q: quit"
 else
-    echo -e "${RED}Error: Installation completed but 'openissue' command not found.${NC}"
+    echo -e "${RED}Error: Installation completed but 'ideae' command not found.${NC}"
     echo "You may need to add Bun's global bin directory to your PATH:"
     echo "  export PATH=\"\$HOME/.bun/bin:\$PATH\""
     exit 1
