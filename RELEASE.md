@@ -85,3 +85,4 @@ git commit -m "feat: add new feature"
 # Or for bigger changes:
 ./prepare-release.sh minor
 ```
+# Test release process
