@@ -21817,11 +21817,11 @@ var ye = k(/^ {0,3}\[(label)\]: *(?:\n[ \t]*)?([^<\s][^\s]*|<.*?>)(?:(?: +(?:\n[
 var Pe = k(/^( {0,3}bull)([ \t][^\n]+?)?(?:\n|$)/).replace(/bull/g, N).getRegex();
 var v = "address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|meta|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul";
 var j = /<!--(?:-?>|[\s\S]*?(?:-->|$))/;
-var Se = k("^ {0,3}(?:<(script|pre|style|textarea)[\\s>][\\s\\S]*?(?:</\\1>[^\\n]*\\n+|$)|comment[^\\n]*(\\n+|$)|<\\?[\\s\\S]*?(?:\\?>\\n*|$)|<![A-Z][\\s\\S]*?(?:>\\n*|$)|<!\\[CDATA\\[[\\s\\S]*?(?:\\]\\]>\\n*|$)|</?(tag)(?: +|\\n|/?>)[\\s\\S]*?(?:(?:\\n[ \t]*)+\\n|$)|<(?!script|pre|style|textarea)([a-z][\\w-]*)(?:attribute)*? */?>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n[ \t]*)+\\n|$)|</(?!script|pre|style|textarea)[a-z][\\w-]*\\s*>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n[ 	]*)+\\n|$))", "i").replace("comment", j).replace("tag", v).replace("attribute", / +[a-zA-Z:_][\w.:-]*(?: *= *"[^"\n]*"| *= *'[^'\n]*'| *= *[^\s"'=<>`]+)?/).getRegex();
+var Se = k("^ {0,3}(?:<(script|pre|style|textarea)[\\s>][\\s\\S]*?(?:</\\1>[^\\n]*\\n+|$)|comment[^\\n]*(\\n+|$)|<\\?[\\s\\S]*?(?:\\?>\\n*|$)|<![A-Z][\\s\\S]*?(?:>\\n*|$)|<!\\[CDATA\\[[\\s\\S]*?(?:\\]\\]>\\n*|$)|</?(tag)(?: +|\\n|/?>)[\\s\\S]*?(?:(?:\\n[ \t]*)+\\n|$)|<(?!script|pre|style|textarea)([a-z][\\w-]*)(?:attribute)*? */?>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n[ \t]*)+\\n|$)|</(?!script|pre|style|textarea)[a-z][\\w-]*\\s*>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n[ \t]*)+\\n|$))", "i").replace("comment", j).replace("tag", v).replace("attribute", / +[a-zA-Z:_][\w.:-]*(?: *= *"[^"\n]*"| *= *'[^'\n]*'| *= *[^\s"'=<>`]+)?/).getRegex();
 var ie = k(Q).replace("hr", I).replace("heading", " {0,3}#{1,6}(?:\\s|$)").replace("|lheading", "").replace("|table", "").replace("blockquote", " {0,3}>").replace("fences", " {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list", " {0,3}(?:[*+-]|1[.)]) ").replace("html", "</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag", v).getRegex();
 var $e = k(/^( {0,3}> ?(paragraph|[^\n]*)(?:\n|$))+/).replace("paragraph", ie).getRegex();
 var U = { blockquote: $e, code: be, def: ye, fences: Re, heading: Te, hr: I, html: Se, lheading: se, list: Pe, newline: xe, paragraph: ie, table: C, text: we };
-var te = k("^ *([^\\n ].*)\\n {0,3}((?:\\| *)?:?-+:? *(?:\\| *:?-+:? *)*(?:\\| *)?)(?:\\n((?:(?! *\\n|hr|heading|blockquote|code|fences|list|html).*(?:\\n|$))*)\\n*|$)").replace("hr", I).replace("heading", " {0,3}#{1,6}(?:\\s|$)").replace("blockquote", " {0,3}>").replace("code", "(?: {4}| {0,3}	)[^\\n]").replace("fences", " {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list", " {0,3}(?:[*+-]|1[.)]) ").replace("html", "</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag", v).getRegex();
+var te = k("^ *([^\\n ].*)\\n {0,3}((?:\\| *)?:?-+:? *(?:\\| *:?-+:? *)*(?:\\| *)?)(?:\\n((?:(?! *\\n|hr|heading|blockquote|code|fences|list|html).*(?:\\n|$))*)\\n*|$)").replace("hr", I).replace("heading", " {0,3}#{1,6}(?:\\s|$)").replace("blockquote", " {0,3}>").replace("code", "(?: {4}| {0,3}\t)[^\\n]").replace("fences", " {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list", " {0,3}(?:[*+-]|1[.)]) ").replace("html", "</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag", v).getRegex();
 var _e = { ...U, lheading: Oe, table: te, paragraph: k(Q).replace("hr", I).replace("heading", " {0,3}#{1,6}(?:\\s|$)").replace("|lheading", "").replace("table", te).replace("blockquote", " {0,3}>").replace("fences", " {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list", " {0,3}(?:[*+-]|1[.)]) ").replace("html", "</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag", v).getRegex() };
 var Le = { ...U, html: k(`^ *(?:comment *(?:\\n|\\s*$)|<(tag)[\\s\\S]+?</\\1> *(?:\\n{2,}|\\s*$)|<tag(?:"[^"]*"|'[^']*'|\\s[^'"/>\\s]*)*?/?> *(?:\\n{2,}|\\s*$))`).replace("comment", j).replace(/tag/g, "(?!(?:a|em|strong|small|s|cite|q|dfn|abbr|data|time|code|var|samp|kbd|sub|sup|i|b|u|mark|ruby|rt|rp|bdi|bdo|span|br|wbr|ins|del|img)\\b)\\w+(?!:|[^\\w\\s@]*@)\\b").getRegex(), def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +(["(][^\n]+[")]))? *(?:\n+|$)/, heading: /^(#{1,6})(.*)(?:\n+|$)/, fences: C, lheading: /^(.+?)\n {0,3}(=+|-+) *(?:\n+|$)/, paragraph: k(Q).replace("hr", I).replace("heading", ` *#{1,6} *[^
 ]`).replace("lheading", se).replace("|table", "").replace("blockquote", " {0,3}>").replace("|fences", "").replace("|list", "").replace("|html", "").replace("|tag", "").getRegex() };
@@ -27449,20 +27449,24 @@ function App(props) {
   const [agentInstructions, setAgentInstructions] = createSignal("");
   let suggestionSeq = 0;
   const colors = {
-    background: "#1a1816",
-    panel: "#1a1816",
-    panelInset: "#222220",
-    border: "#3d3832",
-    borderMuted: "#4a443d",
-    textMuted: "#a18f7a",
-    textDim: "#6b625a",
-    text: "#d4c5b0",
-    textStrong: "#f4ede4",
-    primary: "#d97706",
-    primaryBright: "#f59e0b",
-    accent: "#cc9b6d",
-    accentBg: "#F7AE82",
-    highlight: "#2d2722"
+    background: "#0f0e0d",
+    panel: "#16141f",
+    panelInset: "#1f1d2a",
+    border: "#2d2a3d",
+    borderMuted: "#3a3648",
+    textMuted: "#9896a5",
+    textDim: "#6e6b7f",
+    text: "#d5d3e0",
+    textStrong: "#f4f2ff",
+    primary: "#8b7ff0",
+    primaryBright: "#9f92f5",
+    accent: "#b8a6ff",
+    accentBg: "#6d5fff",
+    highlight: "#221f32",
+    success: "#6fcf97",
+    info: "#56ccf2",
+    warning: "#f2c94c",
+    error: "#eb5757"
   };
   const syntaxStyle = SyntaxStyle.fromTheme([{
     scope: ["default"],
@@ -27484,12 +27488,12 @@ function App(props) {
   }, {
     scope: ["string"],
     style: {
-      foreground: "#9dc896"
+      foreground: colors.success
     }
   }, {
     scope: ["number"],
     style: {
-      foreground: "#88b8d8"
+      foreground: colors.info
     }
   }, {
     scope: ["punctuation"],
@@ -27527,12 +27531,12 @@ function App(props) {
   }, {
     scope: ["markup.code"],
     style: {
-      foreground: "#a8c5d8"
+      foreground: colors.accent
     }
   }, {
     scope: ["markup.link"],
     style: {
-      foreground: "#88a8c8",
+      foreground: colors.info,
       underline: true
     }
   }, {
@@ -28286,14 +28290,14 @@ ${issue.body || ""}`;
   };
   const titlePlaceholder = () => editingId() ? "Edit todo (issue)" : "New todo (issue)";
   return (() => {
-    var _el$ = createElement("box"), _el$2 = createElement("box"), _el$3 = createElement("box"), _el$4 = createElement("text"), _el$5 = createElement("text"), _el$6 = createElement("text"), _el$7 = createElement("box");
+    var _el$ = createElement("box"), _el$2 = createElement("box"), _el$3 = createElement("box"), _el$4 = createElement("text"), _el$5 = createElement("text"), _el$6 = createElement("text"), _el$7 = createElement("text"), _el$8 = createElement("box");
     insertNode(_el$, _el$2);
-    insertNode(_el$, _el$7);
+    insertNode(_el$, _el$8);
     setProp(_el$, "width", "100%");
     setProp(_el$, "height", "100%");
     setProp(_el$, "flexDirection", "column");
     insertNode(_el$2, _el$3);
-    insertNode(_el$2, _el$6);
+    insertNode(_el$2, _el$7);
     setProp(_el$2, "width", "100%");
     setProp(_el$2, "height", 3);
     setProp(_el$2, "flexDirection", "row");
@@ -28306,44 +28310,69 @@ ${issue.body || ""}`;
     setProp(_el$2, "borderStyle", "single");
     insertNode(_el$3, _el$4);
     insertNode(_el$3, _el$5);
+    insertNode(_el$3, _el$6);
     setProp(_el$3, "flexDirection", "row");
     setProp(_el$3, "gap", 2);
+    setProp(_el$3, "alignItems", "center");
     setProp(_el$4, "content", "\uD83D\uDCCB openissue");
-    setProp(_el$7, "width", "100%");
-    setProp(_el$7, "flexGrow", 1);
-    insert(_el$7, (() => {
+    setProp(_el$5, "content", "\u2502");
+    setProp(_el$8, "width", "100%");
+    setProp(_el$8, "flexGrow", 1);
+    insert(_el$8, (() => {
       var _c$ = memo2(() => mode() === "list");
       return () => _c$() ? (() => {
-        var _el$8 = createElement("box"), _el$9 = createElement("box"), _el$0 = createElement("box");
-        insertNode(_el$8, _el$9);
-        insertNode(_el$8, _el$0);
-        setProp(_el$8, "width", "100%");
-        setProp(_el$8, "flexGrow", 1);
-        setProp(_el$8, "flexDirection", "column");
-        setProp(_el$9, "flexDirection", "row");
-        setProp(_el$9, "justifyContent", "space-between");
-        setProp(_el$9, "alignItems", "center");
-        setProp(_el$9, "paddingLeft", 2);
-        setProp(_el$9, "paddingRight", 2);
-        setProp(_el$9, "paddingTop", 1);
-        setProp(_el$9, "paddingBottom", 1);
-        insert(_el$9, (() => {
+        var _el$9 = createElement("box"), _el$0 = createElement("box"), _el$1 = createElement("box");
+        insertNode(_el$9, _el$0);
+        insertNode(_el$9, _el$1);
+        setProp(_el$9, "width", "100%");
+        setProp(_el$9, "flexGrow", 1);
+        setProp(_el$9, "flexDirection", "column");
+        setProp(_el$0, "flexDirection", "row");
+        setProp(_el$0, "justifyContent", "space-between");
+        setProp(_el$0, "alignItems", "center");
+        setProp(_el$0, "paddingLeft", 2);
+        setProp(_el$0, "paddingRight", 2);
+        setProp(_el$0, "paddingTop", 1);
+        setProp(_el$0, "paddingBottom", 1);
+        setProp(_el$0, "borderStyle", "single");
+        insert(_el$0, (() => {
           var _c$3 = memo2(() => viewMode() === "issues");
           return () => _c$3() ? [(() => {
-            var _el$1 = createElement("box"), _el$10 = createElement("text"), _el$11 = createElement("text"), _el$12 = createElement("text");
-            insertNode(_el$1, _el$10);
-            insertNode(_el$1, _el$11);
-            insertNode(_el$1, _el$12);
-            setProp(_el$1, "flexDirection", "row");
-            setProp(_el$1, "gap", 3);
+            var _el$10 = createElement("box"), _el$11 = createElement("text"), _el$12 = createElement("text"), _el$13 = createElement("text"), _el$14 = createElement("text"), _el$15 = createElement("text"), _el$16 = createElement("text"), _el$17 = createElement("text"), _el$18 = createElement("text");
+            insertNode(_el$10, _el$11);
+            insertNode(_el$10, _el$12);
+            insertNode(_el$10, _el$13);
+            insertNode(_el$10, _el$14);
+            insertNode(_el$10, _el$15);
+            insertNode(_el$10, _el$16);
+            insertNode(_el$10, _el$17);
+            insertNode(_el$10, _el$18);
+            setProp(_el$10, "flexDirection", "row");
+            setProp(_el$10, "gap", 3);
+            setProp(_el$11, "content", `Total: `);
+            setProp(_el$13, "content", "\u2502");
+            setProp(_el$13, "marginLeft", 1);
+            setProp(_el$14, "content", `Open: `);
+            setProp(_el$14, "marginLeft", 1);
+            setProp(_el$16, "content", "\u2502");
+            setProp(_el$16, "marginLeft", 1);
+            setProp(_el$17, "content", `Closed: `);
+            setProp(_el$17, "marginLeft", 1);
             effect((_p$) => {
-              var _v$9 = colors.textMuted, _v$0 = `Total ${stats().total}`, _v$1 = colors.primary, _v$10 = `Open ${stats().open}`, _v$11 = colors.textMuted, _v$12 = `Closed ${stats().closed}`;
-              _v$9 !== _p$.e && (_p$.e = setProp(_el$10, "fg", _v$9, _p$.e));
-              _v$0 !== _p$.t && (_p$.t = setProp(_el$10, "content", _v$0, _p$.t));
-              _v$1 !== _p$.a && (_p$.a = setProp(_el$11, "fg", _v$1, _p$.a));
-              _v$10 !== _p$.o && (_p$.o = setProp(_el$11, "content", _v$10, _p$.o));
-              _v$11 !== _p$.i && (_p$.i = setProp(_el$12, "fg", _v$11, _p$.i));
-              _v$12 !== _p$.n && (_p$.n = setProp(_el$12, "content", _v$12, _p$.n));
+              var { textDim: _v$12, text: _v$13 } = colors, _v$14 = TextAttributes.BOLD, _v$15 = `${stats().total}`, _v$16 = colors.borderMuted, _v$17 = colors.textDim, _v$18 = colors.primary, _v$19 = TextAttributes.BOLD, _v$20 = `${stats().open}`, _v$21 = colors.borderMuted, _v$22 = colors.textDim, _v$23 = colors.textMuted, _v$24 = `${stats().closed}`;
+              _v$12 !== _p$.e && (_p$.e = setProp(_el$11, "fg", _v$12, _p$.e));
+              _v$13 !== _p$.t && (_p$.t = setProp(_el$12, "fg", _v$13, _p$.t));
+              _v$14 !== _p$.a && (_p$.a = setProp(_el$12, "attributes", _v$14, _p$.a));
+              _v$15 !== _p$.o && (_p$.o = setProp(_el$12, "content", _v$15, _p$.o));
+              _v$16 !== _p$.i && (_p$.i = setProp(_el$13, "fg", _v$16, _p$.i));
+              _v$17 !== _p$.n && (_p$.n = setProp(_el$14, "fg", _v$17, _p$.n));
+              _v$18 !== _p$.s && (_p$.s = setProp(_el$15, "fg", _v$18, _p$.s));
+              _v$19 !== _p$.h && (_p$.h = setProp(_el$15, "attributes", _v$19, _p$.h));
+              _v$20 !== _p$.r && (_p$.r = setProp(_el$15, "content", _v$20, _p$.r));
+              _v$21 !== _p$.d && (_p$.d = setProp(_el$16, "fg", _v$21, _p$.d));
+              _v$22 !== _p$.l && (_p$.l = setProp(_el$17, "fg", _v$22, _p$.l));
+              _v$23 !== _p$.u && (_p$.u = setProp(_el$18, "fg", _v$23, _p$.u));
+              _v$24 !== _p$.c && (_p$.c = setProp(_el$18, "content", _v$24, _p$.c));
               return _p$;
             }, {
               e: undefined,
@@ -28351,44 +28380,86 @@ ${issue.body || ""}`;
               a: undefined,
               o: undefined,
               i: undefined,
-              n: undefined
+              n: undefined,
+              s: undefined,
+              h: undefined,
+              r: undefined,
+              d: undefined,
+              l: undefined,
+              u: undefined,
+              c: undefined
             });
-            return _el$1;
+            return _el$10;
           })(), (() => {
-            var _el$13 = createElement("box"), _el$14 = createElement("text"), _el$15 = createElement("text");
-            insertNode(_el$13, _el$14);
-            insertNode(_el$13, _el$15);
-            setProp(_el$13, "flexDirection", "row");
-            setProp(_el$13, "gap", 3);
+            var _el$19 = createElement("box"), _el$20 = createElement("text"), _el$21 = createElement("text"), _el$22 = createElement("text"), _el$23 = createElement("text"), _el$24 = createElement("text");
+            insertNode(_el$19, _el$20);
+            insertNode(_el$19, _el$21);
+            insertNode(_el$19, _el$22);
+            insertNode(_el$19, _el$23);
+            insertNode(_el$19, _el$24);
+            setProp(_el$19, "flexDirection", "row");
+            setProp(_el$19, "gap", 3);
+            setProp(_el$20, "content", `Synced: `);
+            setProp(_el$22, "content", "\u2502");
+            setProp(_el$22, "marginLeft", 1);
+            setProp(_el$23, "content", `Local: `);
+            setProp(_el$23, "marginLeft", 1);
             effect((_p$) => {
-              var _v$13 = colors.textMuted, _v$14 = `Synced ${stats().synced}`, _v$15 = colors.textMuted, _v$16 = `Local ${stats().local}`;
-              _v$13 !== _p$.e && (_p$.e = setProp(_el$14, "fg", _v$13, _p$.e));
-              _v$14 !== _p$.t && (_p$.t = setProp(_el$14, "content", _v$14, _p$.t));
-              _v$15 !== _p$.a && (_p$.a = setProp(_el$15, "fg", _v$15, _p$.a));
-              _v$16 !== _p$.o && (_p$.o = setProp(_el$15, "content", _v$16, _p$.o));
+              var { textDim: _v$25, success: _v$26 } = colors, _v$27 = `${stats().synced}`, _v$28 = colors.borderMuted, _v$29 = colors.textDim, _v$30 = colors.info, _v$31 = `${stats().local}`;
+              _v$25 !== _p$.e && (_p$.e = setProp(_el$20, "fg", _v$25, _p$.e));
+              _v$26 !== _p$.t && (_p$.t = setProp(_el$21, "fg", _v$26, _p$.t));
+              _v$27 !== _p$.a && (_p$.a = setProp(_el$21, "content", _v$27, _p$.a));
+              _v$28 !== _p$.o && (_p$.o = setProp(_el$22, "fg", _v$28, _p$.o));
+              _v$29 !== _p$.i && (_p$.i = setProp(_el$23, "fg", _v$29, _p$.i));
+              _v$30 !== _p$.n && (_p$.n = setProp(_el$24, "fg", _v$30, _p$.n));
+              _v$31 !== _p$.s && (_p$.s = setProp(_el$24, "content", _v$31, _p$.s));
               return _p$;
             }, {
               e: undefined,
               t: undefined,
               a: undefined,
-              o: undefined
+              o: undefined,
+              i: undefined,
+              n: undefined,
+              s: undefined
             });
-            return _el$13;
+            return _el$19;
           })()] : [(() => {
-            var _el$16 = createElement("box"), _el$17 = createElement("text"), _el$18 = createElement("text"), _el$19 = createElement("text");
-            insertNode(_el$16, _el$17);
-            insertNode(_el$16, _el$18);
-            insertNode(_el$16, _el$19);
-            setProp(_el$16, "flexDirection", "row");
-            setProp(_el$16, "gap", 3);
+            var _el$25 = createElement("box"), _el$26 = createElement("text"), _el$27 = createElement("text"), _el$28 = createElement("text"), _el$29 = createElement("text"), _el$30 = createElement("text"), _el$31 = createElement("text"), _el$32 = createElement("text"), _el$33 = createElement("text");
+            insertNode(_el$25, _el$26);
+            insertNode(_el$25, _el$27);
+            insertNode(_el$25, _el$28);
+            insertNode(_el$25, _el$29);
+            insertNode(_el$25, _el$30);
+            insertNode(_el$25, _el$31);
+            insertNode(_el$25, _el$32);
+            insertNode(_el$25, _el$33);
+            setProp(_el$25, "flexDirection", "row");
+            setProp(_el$25, "gap", 3);
+            setProp(_el$26, "content", `Total: `);
+            setProp(_el$28, "content", "\u2502");
+            setProp(_el$28, "marginLeft", 1);
+            setProp(_el$29, "content", `Active: `);
+            setProp(_el$29, "marginLeft", 1);
+            setProp(_el$31, "content", "\u2502");
+            setProp(_el$31, "marginLeft", 1);
+            setProp(_el$32, "content", `Done: `);
+            setProp(_el$32, "marginLeft", 1);
             effect((_p$) => {
-              var _v$17 = colors.textMuted, _v$18 = `Total ${agentStats().total}`, _v$19 = colors.primaryBright, _v$20 = `Active ${agentStats().active}`, _v$21 = colors.primary, _v$22 = `Done ${agentStats().completed}`;
-              _v$17 !== _p$.e && (_p$.e = setProp(_el$17, "fg", _v$17, _p$.e));
-              _v$18 !== _p$.t && (_p$.t = setProp(_el$17, "content", _v$18, _p$.t));
-              _v$19 !== _p$.a && (_p$.a = setProp(_el$18, "fg", _v$19, _p$.a));
-              _v$20 !== _p$.o && (_p$.o = setProp(_el$18, "content", _v$20, _p$.o));
-              _v$21 !== _p$.i && (_p$.i = setProp(_el$19, "fg", _v$21, _p$.i));
-              _v$22 !== _p$.n && (_p$.n = setProp(_el$19, "content", _v$22, _p$.n));
+              var { textDim: _v$32, text: _v$33 } = colors, _v$34 = TextAttributes.BOLD, _v$35 = `${agentStats().total}`, _v$36 = colors.borderMuted, _v$37 = colors.textDim, _v$38 = colors.primaryBright, _v$39 = TextAttributes.BOLD, _v$40 = `${agentStats().active}`, _v$41 = colors.borderMuted, _v$42 = colors.textDim, _v$43 = colors.success, _v$44 = `${agentStats().completed}`;
+              _v$32 !== _p$.e && (_p$.e = setProp(_el$26, "fg", _v$32, _p$.e));
+              _v$33 !== _p$.t && (_p$.t = setProp(_el$27, "fg", _v$33, _p$.t));
+              _v$34 !== _p$.a && (_p$.a = setProp(_el$27, "attributes", _v$34, _p$.a));
+              _v$35 !== _p$.o && (_p$.o = setProp(_el$27, "content", _v$35, _p$.o));
+              _v$36 !== _p$.i && (_p$.i = setProp(_el$28, "fg", _v$36, _p$.i));
+              _v$37 !== _p$.n && (_p$.n = setProp(_el$29, "fg", _v$37, _p$.n));
+              _v$38 !== _p$.s && (_p$.s = setProp(_el$30, "fg", _v$38, _p$.s));
+              _v$39 !== _p$.h && (_p$.h = setProp(_el$30, "attributes", _v$39, _p$.h));
+              _v$40 !== _p$.r && (_p$.r = setProp(_el$30, "content", _v$40, _p$.r));
+              _v$41 !== _p$.d && (_p$.d = setProp(_el$31, "fg", _v$41, _p$.d));
+              _v$42 !== _p$.l && (_p$.l = setProp(_el$32, "fg", _v$42, _p$.l));
+              _v$43 !== _p$.u && (_p$.u = setProp(_el$33, "fg", _v$43, _p$.u));
+              _v$44 !== _p$.c && (_p$.c = setProp(_el$33, "content", _v$44, _p$.c));
               return _p$;
             }, {
               e: undefined,
@@ -28396,79 +28467,100 @@ ${issue.body || ""}`;
               a: undefined,
               o: undefined,
               i: undefined,
-              n: undefined
+              n: undefined,
+              s: undefined,
+              h: undefined,
+              r: undefined,
+              d: undefined,
+              l: undefined,
+              u: undefined,
+              c: undefined
             });
-            return _el$16;
+            return _el$25;
           })(), (() => {
-            var _el$20 = createElement("box"), _el$21 = createElement("text"), _el$22 = createElement("text");
-            insertNode(_el$20, _el$21);
-            insertNode(_el$20, _el$22);
-            setProp(_el$20, "flexDirection", "row");
-            setProp(_el$20, "gap", 3);
+            var _el$34 = createElement("box"), _el$35 = createElement("text"), _el$36 = createElement("text"), _el$37 = createElement("text"), _el$38 = createElement("text"), _el$39 = createElement("text");
+            insertNode(_el$34, _el$35);
+            insertNode(_el$34, _el$36);
+            insertNode(_el$34, _el$37);
+            insertNode(_el$34, _el$38);
+            insertNode(_el$34, _el$39);
+            setProp(_el$34, "flexDirection", "row");
+            setProp(_el$34, "gap", 3);
+            setProp(_el$35, "content", `Failed: `);
+            setProp(_el$37, "content", "\u2502");
+            setProp(_el$37, "marginLeft", 1);
+            setProp(_el$38, "content", `Draft: `);
+            setProp(_el$38, "marginLeft", 1);
             effect((_p$) => {
-              var _v$23 = colors.textDim, _v$24 = `Failed ${agentStats().failed}`, _v$25 = colors.textMuted, _v$26 = `Draft ${agentStats().draft}`;
-              _v$23 !== _p$.e && (_p$.e = setProp(_el$21, "fg", _v$23, _p$.e));
-              _v$24 !== _p$.t && (_p$.t = setProp(_el$21, "content", _v$24, _p$.t));
-              _v$25 !== _p$.a && (_p$.a = setProp(_el$22, "fg", _v$25, _p$.a));
-              _v$26 !== _p$.o && (_p$.o = setProp(_el$22, "content", _v$26, _p$.o));
+              var { textDim: _v$45, error: _v$46 } = colors, _v$47 = `${agentStats().failed}`, _v$48 = colors.borderMuted, _v$49 = colors.textDim, _v$50 = colors.textMuted, _v$51 = `${agentStats().draft}`;
+              _v$45 !== _p$.e && (_p$.e = setProp(_el$35, "fg", _v$45, _p$.e));
+              _v$46 !== _p$.t && (_p$.t = setProp(_el$36, "fg", _v$46, _p$.t));
+              _v$47 !== _p$.a && (_p$.a = setProp(_el$36, "content", _v$47, _p$.a));
+              _v$48 !== _p$.o && (_p$.o = setProp(_el$37, "fg", _v$48, _p$.o));
+              _v$49 !== _p$.i && (_p$.i = setProp(_el$38, "fg", _v$49, _p$.i));
+              _v$50 !== _p$.n && (_p$.n = setProp(_el$39, "fg", _v$50, _p$.n));
+              _v$51 !== _p$.s && (_p$.s = setProp(_el$39, "content", _v$51, _p$.s));
               return _p$;
             }, {
               e: undefined,
               t: undefined,
               a: undefined,
-              o: undefined
+              o: undefined,
+              i: undefined,
+              n: undefined,
+              s: undefined
             });
-            return _el$20;
+            return _el$34;
           })()];
         })());
-        setProp(_el$0, "height", 1);
-        setProp(_el$0, "paddingLeft", 2);
-        insert(_el$0, (() => {
+        setProp(_el$1, "height", 1);
+        setProp(_el$1, "paddingLeft", 2);
+        insert(_el$1, (() => {
           var _c$4 = memo2(() => !!message());
           return () => _c$4() && (() => {
-            var _el$23 = createElement("text");
+            var _el$40 = createElement("text");
             effect((_p$) => {
-              var _v$27 = colors.primary, _v$28 = message();
-              _v$27 !== _p$.e && (_p$.e = setProp(_el$23, "fg", _v$27, _p$.e));
-              _v$28 !== _p$.t && (_p$.t = setProp(_el$23, "content", _v$28, _p$.t));
+              var _v$52 = colors.primary, _v$53 = message();
+              _v$52 !== _p$.e && (_p$.e = setProp(_el$40, "fg", _v$52, _p$.e));
+              _v$53 !== _p$.t && (_p$.t = setProp(_el$40, "content", _v$53, _p$.t));
               return _p$;
             }, {
               e: undefined,
               t: undefined
             });
-            return _el$23;
+            return _el$40;
           })();
         })());
-        insert(_el$8, (() => {
+        insert(_el$9, (() => {
           var _c$5 = memo2(() => viewMode() === "issues");
           return () => _c$5() ? memo2(() => issueOptions().length === 0)() ? (() => {
-            var _el$24 = createElement("box"), _el$25 = createElement("text");
-            insertNode(_el$24, _el$25);
-            setProp(_el$24, "paddingLeft", 2);
-            setProp(_el$24, "paddingTop", 2);
-            setProp(_el$25, "content", "No todos yet. Press 'n' to create one.");
-            effect((_$p) => setProp(_el$25, "fg", colors.textDim, _$p));
-            return _el$24;
+            var _el$41 = createElement("box"), _el$42 = createElement("text");
+            insertNode(_el$41, _el$42);
+            setProp(_el$41, "paddingLeft", 2);
+            setProp(_el$41, "paddingTop", 2);
+            setProp(_el$42, "content", "No todos yet. Press 'n' to create one.");
+            effect((_$p) => setProp(_el$42, "fg", colors.textDim, _$p));
+            return _el$41;
           })() : (() => {
-            var _el$26 = createElement("select");
-            setProp(_el$26, "width", "100%");
-            setProp(_el$26, "height", "100%");
-            setProp(_el$26, "showScrollIndicator", true);
-            setProp(_el$26, "focused", true);
-            setProp(_el$26, "backgroundColor", "transparent");
-            setProp(_el$26, "onChange", (index) => setSelectedIndex(index));
-            setProp(_el$26, "onSelect", (index) => {
+            var _el$43 = createElement("select");
+            setProp(_el$43, "width", "100%");
+            setProp(_el$43, "height", "100%");
+            setProp(_el$43, "showScrollIndicator", true);
+            setProp(_el$43, "focused", true);
+            setProp(_el$43, "backgroundColor", "transparent");
+            setProp(_el$43, "onChange", (index) => setSelectedIndex(index));
+            setProp(_el$43, "onSelect", (index) => {
               const issue = issues()[index];
               if (issue)
                 openEdit(issue);
             });
             effect((_p$) => {
-              var _v$29 = issueOptions(), _v$30 = selectedIndex(), _v$31 = colors.primary, _v$32 = colors.textStrong, _v$33 = colors.highlight;
-              _v$29 !== _p$.e && (_p$.e = setProp(_el$26, "options", _v$29, _p$.e));
-              _v$30 !== _p$.t && (_p$.t = setProp(_el$26, "selectedIndex", _v$30, _p$.t));
-              _v$31 !== _p$.a && (_p$.a = setProp(_el$26, "selectedBackgroundColor", _v$31, _p$.a));
-              _v$32 !== _p$.o && (_p$.o = setProp(_el$26, "textColor", _v$32, _p$.o));
-              _v$33 !== _p$.i && (_p$.i = setProp(_el$26, "selectedTextColor", _v$33, _p$.i));
+              var _v$54 = issueOptions(), _v$55 = selectedIndex(), _v$56 = colors.highlight, _v$57 = colors.text, _v$58 = colors.primary;
+              _v$54 !== _p$.e && (_p$.e = setProp(_el$43, "options", _v$54, _p$.e));
+              _v$55 !== _p$.t && (_p$.t = setProp(_el$43, "selectedIndex", _v$55, _p$.t));
+              _v$56 !== _p$.a && (_p$.a = setProp(_el$43, "selectedBackgroundColor", _v$56, _p$.a));
+              _v$57 !== _p$.o && (_p$.o = setProp(_el$43, "textColor", _v$57, _p$.o));
+              _v$58 !== _p$.i && (_p$.i = setProp(_el$43, "selectedTextColor", _v$58, _p$.i));
               return _p$;
             }, {
               e: undefined,
@@ -28477,24 +28569,24 @@ ${issue.body || ""}`;
               o: undefined,
               i: undefined
             });
-            return _el$26;
+            return _el$43;
           })() : memo2(() => agentTaskOptions().length === 0)() ? (() => {
-            var _el$27 = createElement("box"), _el$28 = createElement("text");
-            insertNode(_el$27, _el$28);
-            setProp(_el$27, "paddingLeft", 2);
-            setProp(_el$27, "paddingTop", 2);
-            setProp(_el$28, "content", "No agent tasks yet. Press 'n' to create one or 'r' to refresh.");
-            effect((_$p) => setProp(_el$28, "fg", colors.textDim, _$p));
-            return _el$27;
+            var _el$44 = createElement("box"), _el$45 = createElement("text");
+            insertNode(_el$44, _el$45);
+            setProp(_el$44, "paddingLeft", 2);
+            setProp(_el$44, "paddingTop", 2);
+            setProp(_el$45, "content", "No agent tasks yet. Press 'n' to create one or 'r' to refresh.");
+            effect((_$p) => setProp(_el$45, "fg", colors.textDim, _$p));
+            return _el$44;
           })() : (() => {
-            var _el$29 = createElement("select");
-            setProp(_el$29, "width", "100%");
-            setProp(_el$29, "height", "100%");
-            setProp(_el$29, "showScrollIndicator", true);
-            setProp(_el$29, "focused", true);
-            setProp(_el$29, "backgroundColor", "transparent");
-            setProp(_el$29, "onChange", (index) => setSelectedIndex(index));
-            setProp(_el$29, "onSelect", (index) => {
+            var _el$46 = createElement("select");
+            setProp(_el$46, "width", "100%");
+            setProp(_el$46, "height", "100%");
+            setProp(_el$46, "showScrollIndicator", true);
+            setProp(_el$46, "focused", true);
+            setProp(_el$46, "backgroundColor", "transparent");
+            setProp(_el$46, "onChange", (index) => setSelectedIndex(index));
+            setProp(_el$46, "onSelect", (index) => {
               const task = agentTasks()[index];
               if (task) {
                 const provider2 = props.state.provider();
@@ -28513,12 +28605,12 @@ ${issue.body || ""}`;
               }
             });
             effect((_p$) => {
-              var _v$34 = agentTaskOptions(), _v$35 = selectedIndex(), _v$36 = colors.primary, _v$37 = colors.textStrong, _v$38 = colors.highlight;
-              _v$34 !== _p$.e && (_p$.e = setProp(_el$29, "options", _v$34, _p$.e));
-              _v$35 !== _p$.t && (_p$.t = setProp(_el$29, "selectedIndex", _v$35, _p$.t));
-              _v$36 !== _p$.a && (_p$.a = setProp(_el$29, "selectedBackgroundColor", _v$36, _p$.a));
-              _v$37 !== _p$.o && (_p$.o = setProp(_el$29, "textColor", _v$37, _p$.o));
-              _v$38 !== _p$.i && (_p$.i = setProp(_el$29, "selectedTextColor", _v$38, _p$.i));
+              var _v$59 = agentTaskOptions(), _v$60 = selectedIndex(), _v$61 = colors.highlight, _v$62 = colors.text, _v$63 = colors.primary;
+              _v$59 !== _p$.e && (_p$.e = setProp(_el$46, "options", _v$59, _p$.e));
+              _v$60 !== _p$.t && (_p$.t = setProp(_el$46, "selectedIndex", _v$60, _p$.t));
+              _v$61 !== _p$.a && (_p$.a = setProp(_el$46, "selectedBackgroundColor", _v$61, _p$.a));
+              _v$62 !== _p$.o && (_p$.o = setProp(_el$46, "textColor", _v$62, _p$.o));
+              _v$63 !== _p$.i && (_p$.i = setProp(_el$46, "selectedTextColor", _v$63, _p$.i));
               return _p$;
             }, {
               e: undefined,
@@ -28527,84 +28619,94 @@ ${issue.body || ""}`;
               o: undefined,
               i: undefined
             });
-            return _el$29;
+            return _el$46;
           })();
         })(), null);
-        effect((_$p) => setProp(_el$8, "backgroundColor", colors.panel, _$p));
-        return _el$8;
+        effect((_p$) => {
+          var { panel: _v$1, panelInset: _v$10, border: _v$11 } = colors;
+          _v$1 !== _p$.e && (_p$.e = setProp(_el$9, "backgroundColor", _v$1, _p$.e));
+          _v$10 !== _p$.t && (_p$.t = setProp(_el$0, "backgroundColor", _v$10, _p$.t));
+          _v$11 !== _p$.a && (_p$.a = setProp(_el$0, "borderColor", _v$11, _p$.a));
+          return _p$;
+        }, {
+          e: undefined,
+          t: undefined,
+          a: undefined
+        });
+        return _el$9;
       })() : memo2(() => mode() === "read")() ? (() => {
         const issue = readingId() ? props.state.store.get(readingId()) : null;
         return (() => {
-          var _el$30 = createElement("box"), _el$31 = createElement("box"), _el$32 = createElement("text"), _el$33 = createElement("box"), _el$34 = createElement("scrollbox"), _el$35 = createElement("box"), _el$36 = createElement("code");
-          insertNode(_el$30, _el$31);
-          insertNode(_el$30, _el$33);
-          setProp(_el$30, "width", "100%");
-          setProp(_el$30, "flexGrow", 1);
-          setProp(_el$30, "padding", 2);
-          setProp(_el$30, "flexDirection", "column");
-          setProp(_el$30, "gap", 2);
-          insertNode(_el$31, _el$32);
-          setProp(_el$31, "height", 3);
-          setProp(_el$31, "borderStyle", "single");
-          setProp(_el$31, "paddingLeft", 2);
-          setProp(_el$31, "paddingRight", 2);
-          setProp(_el$31, "flexDirection", "row");
-          setProp(_el$31, "alignItems", "center");
-          insert(_el$30, (() => {
+          var _el$47 = createElement("box"), _el$48 = createElement("box"), _el$49 = createElement("text"), _el$50 = createElement("box"), _el$51 = createElement("scrollbox"), _el$52 = createElement("box"), _el$53 = createElement("code");
+          insertNode(_el$47, _el$48);
+          insertNode(_el$47, _el$50);
+          setProp(_el$47, "width", "100%");
+          setProp(_el$47, "flexGrow", 1);
+          setProp(_el$47, "padding", 2);
+          setProp(_el$47, "flexDirection", "column");
+          setProp(_el$47, "gap", 2);
+          insertNode(_el$48, _el$49);
+          setProp(_el$48, "height", 3);
+          setProp(_el$48, "borderStyle", "single");
+          setProp(_el$48, "paddingLeft", 2);
+          setProp(_el$48, "paddingRight", 2);
+          setProp(_el$48, "flexDirection", "row");
+          setProp(_el$48, "alignItems", "center");
+          insert(_el$47, (() => {
             var _c$6 = memo2(() => !!message());
             return () => _c$6() && (() => {
-              var _el$37 = createElement("box"), _el$38 = createElement("text");
-              insertNode(_el$37, _el$38);
-              setProp(_el$37, "height", 1);
+              var _el$54 = createElement("box"), _el$55 = createElement("text");
+              insertNode(_el$54, _el$55);
+              setProp(_el$54, "height", 1);
               effect((_p$) => {
-                var _v$48 = colors.textMuted, _v$49 = message();
-                _v$48 !== _p$.e && (_p$.e = setProp(_el$38, "fg", _v$48, _p$.e));
-                _v$49 !== _p$.t && (_p$.t = setProp(_el$38, "content", _v$49, _p$.t));
+                var _v$73 = colors.textMuted, _v$74 = message();
+                _v$73 !== _p$.e && (_p$.e = setProp(_el$55, "fg", _v$73, _p$.e));
+                _v$74 !== _p$.t && (_p$.t = setProp(_el$55, "content", _v$74, _p$.t));
                 return _p$;
               }, {
                 e: undefined,
                 t: undefined
               });
-              return _el$37;
+              return _el$54;
             })();
-          })(), _el$33);
-          insertNode(_el$33, _el$34);
-          setProp(_el$33, "flexGrow", 1);
-          setProp(_el$33, "borderStyle", "single");
-          setProp(_el$33, "padding", 2);
-          insertNode(_el$34, _el$35);
-          setProp(_el$34, "width", "100%");
-          setProp(_el$34, "flexGrow", 1);
-          insertNode(_el$35, _el$36);
-          setProp(_el$35, "flexDirection", "column");
-          setProp(_el$35, "gap", 1);
-          setProp(_el$36, "filetype", "markdown");
-          setProp(_el$36, "syntaxStyle", syntaxStyle);
-          setProp(_el$36, "wrapMode", "word");
-          setProp(_el$36, "bg", "transparent");
-          insert(_el$35, (() => {
+          })(), _el$50);
+          insertNode(_el$50, _el$51);
+          setProp(_el$50, "flexGrow", 1);
+          setProp(_el$50, "borderStyle", "single");
+          setProp(_el$50, "padding", 2);
+          insertNode(_el$51, _el$52);
+          setProp(_el$51, "width", "100%");
+          setProp(_el$51, "flexGrow", 1);
+          insertNode(_el$52, _el$53);
+          setProp(_el$52, "flexDirection", "column");
+          setProp(_el$52, "gap", 1);
+          setProp(_el$53, "filetype", "markdown");
+          setProp(_el$53, "syntaxStyle", syntaxStyle);
+          setProp(_el$53, "wrapMode", "word");
+          setProp(_el$53, "bg", "transparent");
+          insert(_el$52, (() => {
             var _c$7 = memo2(() => comments().length > 0);
             return () => _c$7() && (() => {
-              var _el$39 = createElement("box"), _el$40 = createElement("text");
-              insertNode(_el$39, _el$40);
-              setProp(_el$39, "flexDirection", "column");
-              setProp(_el$39, "gap", 1);
-              setProp(_el$39, "marginTop", 2);
-              setProp(_el$40, "content", "\u2500\u2500\u2500 Comments \u2500\u2500\u2500");
-              insert(_el$39, () => comments().map((comment) => (() => {
-                var _el$41 = createElement("box"), _el$42 = createElement("text"), _el$43 = createElement("text");
-                insertNode(_el$41, _el$42);
-                insertNode(_el$41, _el$43);
-                setProp(_el$41, "flexDirection", "column");
-                setProp(_el$41, "gap", 0);
-                setProp(_el$41, "marginTop", 1);
+              var _el$56 = createElement("box"), _el$57 = createElement("text");
+              insertNode(_el$56, _el$57);
+              setProp(_el$56, "flexDirection", "column");
+              setProp(_el$56, "gap", 1);
+              setProp(_el$56, "marginTop", 2);
+              setProp(_el$57, "content", "\u2500\u2500\u2500 Comments \u2500\u2500\u2500");
+              insert(_el$56, () => comments().map((comment) => (() => {
+                var _el$58 = createElement("box"), _el$59 = createElement("text"), _el$60 = createElement("text");
+                insertNode(_el$58, _el$59);
+                insertNode(_el$58, _el$60);
+                setProp(_el$58, "flexDirection", "column");
+                setProp(_el$58, "gap", 0);
+                setProp(_el$58, "marginTop", 1);
                 effect((_p$) => {
-                  var _v$50 = colors.primary, _v$51 = TextAttributes.BOLD, _v$52 = `@${comment.author} \xB7 ${new Date(comment.createdAt).toLocaleDateString()}`, _v$53 = colors.text, _v$54 = comment.body;
-                  _v$50 !== _p$.e && (_p$.e = setProp(_el$42, "fg", _v$50, _p$.e));
-                  _v$51 !== _p$.t && (_p$.t = setProp(_el$42, "attributes", _v$51, _p$.t));
-                  _v$52 !== _p$.a && (_p$.a = setProp(_el$42, "content", _v$52, _p$.a));
-                  _v$53 !== _p$.o && (_p$.o = setProp(_el$43, "fg", _v$53, _p$.o));
-                  _v$54 !== _p$.i && (_p$.i = setProp(_el$43, "content", _v$54, _p$.i));
+                  var _v$75 = colors.primary, _v$76 = TextAttributes.BOLD, _v$77 = `@${comment.author} \xB7 ${new Date(comment.createdAt).toLocaleDateString()}`, _v$78 = colors.text, _v$79 = comment.body;
+                  _v$75 !== _p$.e && (_p$.e = setProp(_el$59, "fg", _v$75, _p$.e));
+                  _v$76 !== _p$.t && (_p$.t = setProp(_el$59, "attributes", _v$76, _p$.t));
+                  _v$77 !== _p$.a && (_p$.a = setProp(_el$59, "content", _v$77, _p$.a));
+                  _v$78 !== _p$.o && (_p$.o = setProp(_el$60, "fg", _v$78, _p$.o));
+                  _v$79 !== _p$.i && (_p$.i = setProp(_el$60, "content", _v$79, _p$.i));
                   return _p$;
                 }, {
                   e: undefined,
@@ -28613,23 +28715,23 @@ ${issue.body || ""}`;
                   o: undefined,
                   i: undefined
                 });
-                return _el$41;
+                return _el$58;
               })()), null);
-              effect((_$p) => setProp(_el$40, "fg", colors.textMuted, _$p));
-              return _el$39;
+              effect((_$p) => setProp(_el$57, "fg", colors.textMuted, _$p));
+              return _el$56;
             })();
           })(), null);
           effect((_p$) => {
-            var { panel: _v$39, border: _v$40, panelInset: _v$41, textStrong: _v$42 } = colors, _v$43 = TextAttributes.BOLD, _v$44 = issue?.title || "", _v$45 = colors.border, _v$46 = colors.panelInset, _v$47 = issue?.body || "No description";
-            _v$39 !== _p$.e && (_p$.e = setProp(_el$30, "backgroundColor", _v$39, _p$.e));
-            _v$40 !== _p$.t && (_p$.t = setProp(_el$31, "borderColor", _v$40, _p$.t));
-            _v$41 !== _p$.a && (_p$.a = setProp(_el$31, "backgroundColor", _v$41, _p$.a));
-            _v$42 !== _p$.o && (_p$.o = setProp(_el$32, "fg", _v$42, _p$.o));
-            _v$43 !== _p$.i && (_p$.i = setProp(_el$32, "attributes", _v$43, _p$.i));
-            _v$44 !== _p$.n && (_p$.n = setProp(_el$32, "content", _v$44, _p$.n));
-            _v$45 !== _p$.s && (_p$.s = setProp(_el$33, "borderColor", _v$45, _p$.s));
-            _v$46 !== _p$.h && (_p$.h = setProp(_el$33, "backgroundColor", _v$46, _p$.h));
-            _v$47 !== _p$.r && (_p$.r = setProp(_el$36, "content", _v$47, _p$.r));
+            var { panel: _v$64, border: _v$65, panelInset: _v$66, textStrong: _v$67 } = colors, _v$68 = TextAttributes.BOLD, _v$69 = issue?.title || "", _v$70 = colors.border, _v$71 = colors.panelInset, _v$72 = issue?.body || "No description";
+            _v$64 !== _p$.e && (_p$.e = setProp(_el$47, "backgroundColor", _v$64, _p$.e));
+            _v$65 !== _p$.t && (_p$.t = setProp(_el$48, "borderColor", _v$65, _p$.t));
+            _v$66 !== _p$.a && (_p$.a = setProp(_el$48, "backgroundColor", _v$66, _p$.a));
+            _v$67 !== _p$.o && (_p$.o = setProp(_el$49, "fg", _v$67, _p$.o));
+            _v$68 !== _p$.i && (_p$.i = setProp(_el$49, "attributes", _v$68, _p$.i));
+            _v$69 !== _p$.n && (_p$.n = setProp(_el$49, "content", _v$69, _p$.n));
+            _v$70 !== _p$.s && (_p$.s = setProp(_el$50, "borderColor", _v$70, _p$.s));
+            _v$71 !== _p$.h && (_p$.h = setProp(_el$50, "backgroundColor", _v$71, _p$.h));
+            _v$72 !== _p$.r && (_p$.r = setProp(_el$53, "content", _v$72, _p$.r));
             return _p$;
           }, {
             e: undefined,
@@ -28642,24 +28744,24 @@ ${issue.body || ""}`;
             h: undefined,
             r: undefined
           });
-          return _el$30;
+          return _el$47;
         })();
       })() : (() => {
-        var _el$44 = createElement("box"), _el$45 = createElement("box"), _el$46 = createElement("input"), _el$47 = createElement("box"), _el$48 = createElement("textarea");
-        insertNode(_el$44, _el$45);
-        insertNode(_el$44, _el$47);
-        setProp(_el$44, "width", "100%");
-        setProp(_el$44, "flexGrow", 1);
-        setProp(_el$44, "flexDirection", "column");
-        setProp(_el$44, "padding", 2);
-        setProp(_el$44, "gap", 2);
-        insertNode(_el$45, _el$46);
-        setProp(_el$45, "height", 3);
-        setProp(_el$45, "borderStyle", "single");
-        setProp(_el$45, "paddingLeft", 2);
-        setProp(_el$45, "paddingRight", 2);
-        setProp(_el$45, "flexDirection", "row");
-        setProp(_el$45, "alignItems", "center");
+        var _el$61 = createElement("box"), _el$62 = createElement("box"), _el$63 = createElement("input"), _el$64 = createElement("box"), _el$65 = createElement("textarea");
+        insertNode(_el$61, _el$62);
+        insertNode(_el$61, _el$64);
+        setProp(_el$61, "width", "100%");
+        setProp(_el$61, "flexGrow", 1);
+        setProp(_el$61, "flexDirection", "column");
+        setProp(_el$61, "padding", 2);
+        setProp(_el$61, "gap", 2);
+        insertNode(_el$62, _el$63);
+        setProp(_el$62, "height", 3);
+        setProp(_el$62, "borderStyle", "single");
+        setProp(_el$62, "paddingLeft", 2);
+        setProp(_el$62, "paddingRight", 2);
+        setProp(_el$62, "flexDirection", "row");
+        setProp(_el$62, "alignItems", "center");
         use((renderable) => {
           titleInput = renderable;
           if (!renderable)
@@ -28667,36 +28769,36 @@ ${issue.body || ""}`;
           if (renderable.value !== titleValue()) {
             renderable.value = titleValue();
           }
-        }, _el$46);
-        setProp(_el$46, "width", "100%");
-        setProp(_el$46, "flexGrow", 1);
-        setProp(_el$46, "backgroundColor", "transparent");
-        setProp(_el$46, "focusedBackgroundColor", "transparent");
-        setProp(_el$46, "onSubmit", saveIssue);
-        setProp(_el$46, "onKeyDown", handleTitleKeyDown);
-        setProp(_el$46, "onInput", handleTitleInput);
-        insert(_el$44, (() => {
+        }, _el$63);
+        setProp(_el$63, "width", "100%");
+        setProp(_el$63, "flexGrow", 1);
+        setProp(_el$63, "backgroundColor", "transparent");
+        setProp(_el$63, "focusedBackgroundColor", "transparent");
+        setProp(_el$63, "onSubmit", saveIssue);
+        setProp(_el$63, "onKeyDown", handleTitleKeyDown);
+        setProp(_el$63, "onInput", handleTitleInput);
+        insert(_el$61, (() => {
           var _c$8 = memo2(() => !!message());
           return () => _c$8() && (() => {
-            var _el$49 = createElement("box"), _el$50 = createElement("text");
-            insertNode(_el$49, _el$50);
-            setProp(_el$49, "height", 1);
+            var _el$66 = createElement("box"), _el$67 = createElement("text");
+            insertNode(_el$66, _el$67);
+            setProp(_el$66, "height", 1);
             effect((_p$) => {
-              var _v$70 = colors.primary, _v$71 = message();
-              _v$70 !== _p$.e && (_p$.e = setProp(_el$50, "fg", _v$70, _p$.e));
-              _v$71 !== _p$.t && (_p$.t = setProp(_el$50, "content", _v$71, _p$.t));
+              var _v$95 = colors.primary, _v$96 = message();
+              _v$95 !== _p$.e && (_p$.e = setProp(_el$67, "fg", _v$95, _p$.e));
+              _v$96 !== _p$.t && (_p$.t = setProp(_el$67, "content", _v$96, _p$.t));
               return _p$;
             }, {
               e: undefined,
               t: undefined
             });
-            return _el$49;
+            return _el$66;
           })();
-        })(), _el$47);
-        insertNode(_el$47, _el$48);
-        setProp(_el$47, "flexGrow", 1);
-        setProp(_el$47, "borderStyle", "single");
-        setProp(_el$47, "padding", 2);
+        })(), _el$64);
+        insertNode(_el$64, _el$65);
+        setProp(_el$64, "flexGrow", 1);
+        setProp(_el$64, "borderStyle", "single");
+        setProp(_el$64, "padding", 2);
         use((renderable) => {
           descTextarea = renderable;
           if (!renderable)
@@ -28704,43 +28806,43 @@ ${issue.body || ""}`;
           if (renderable.plainText !== descValue()) {
             renderable.setText(descValue());
           }
-        }, _el$48);
-        setProp(_el$48, "flexGrow", 1);
-        setProp(_el$48, "placeholder", "Description (markdown supported)");
-        setProp(_el$48, "backgroundColor", "transparent");
-        setProp(_el$48, "focusedBackgroundColor", "transparent");
-        setProp(_el$48, "wrapMode", "word");
-        setProp(_el$48, "syntaxStyle", syntaxStyle);
-        setProp(_el$48, "tabIndicator", "  ");
-        setProp(_el$48, "onSubmit", saveIssue);
-        setProp(_el$48, "onKeyDown", handleDescKeyDown);
-        setProp(_el$48, "onContentChange", () => handleDescInput(descTextarea?.plainText ?? ""));
-        insert(_el$44, (() => {
+        }, _el$65);
+        setProp(_el$65, "flexGrow", 1);
+        setProp(_el$65, "placeholder", "Description (markdown supported)");
+        setProp(_el$65, "backgroundColor", "transparent");
+        setProp(_el$65, "focusedBackgroundColor", "transparent");
+        setProp(_el$65, "wrapMode", "word");
+        setProp(_el$65, "syntaxStyle", syntaxStyle);
+        setProp(_el$65, "tabIndicator", "  ");
+        setProp(_el$65, "onSubmit", saveIssue);
+        setProp(_el$65, "onKeyDown", handleDescKeyDown);
+        setProp(_el$65, "onContentChange", () => handleDescInput(descTextarea?.plainText ?? ""));
+        insert(_el$61, (() => {
           var _c$9 = memo2(() => !!(showSuggestions() && suggestionOptions().length > 0));
           return () => _c$9() && (() => {
-            var _el$51 = createElement("box"), _el$52 = createElement("select");
-            insertNode(_el$51, _el$52);
-            setProp(_el$51, "width", "100%");
-            setProp(_el$51, "maxHeight", 12);
-            setProp(_el$51, "borderStyle", "single");
-            setProp(_el$51, "zIndex", 100);
-            setProp(_el$52, "width", "100%");
-            setProp(_el$52, "showScrollIndicator", true);
-            setProp(_el$52, "backgroundColor", "transparent");
-            setProp(_el$52, "onChange", (index) => setSuggestionIndex(index));
-            setProp(_el$52, "onSelect", (index) => acceptSuggestion(index));
+            var _el$68 = createElement("box"), _el$69 = createElement("select");
+            insertNode(_el$68, _el$69);
+            setProp(_el$68, "width", "100%");
+            setProp(_el$68, "maxHeight", 12);
+            setProp(_el$68, "borderStyle", "single");
+            setProp(_el$68, "zIndex", 100);
+            setProp(_el$69, "width", "100%");
+            setProp(_el$69, "showScrollIndicator", true);
+            setProp(_el$69, "backgroundColor", "transparent");
+            setProp(_el$69, "onChange", (index) => setSuggestionIndex(index));
+            setProp(_el$69, "onSelect", (index) => acceptSuggestion(index));
             effect((_p$) => {
-              var { primary: _v$72, panelInset: _v$73 } = colors, _v$74 = Math.min(8, suggestionOptions().length), _v$75 = suggestionOptions(), _v$76 = suggestionIndex(), _v$77 = colors.primary, _v$78 = colors.highlight, _v$79 = colors.textMuted, _v$80 = colors.textMuted, _v$81 = colors.textStrong;
-              _v$72 !== _p$.e && (_p$.e = setProp(_el$51, "borderColor", _v$72, _p$.e));
-              _v$73 !== _p$.t && (_p$.t = setProp(_el$51, "backgroundColor", _v$73, _p$.t));
-              _v$74 !== _p$.a && (_p$.a = setProp(_el$52, "height", _v$74, _p$.a));
-              _v$75 !== _p$.o && (_p$.o = setProp(_el$52, "options", _v$75, _p$.o));
-              _v$76 !== _p$.i && (_p$.i = setProp(_el$52, "selectedIndex", _v$76, _p$.i));
-              _v$77 !== _p$.n && (_p$.n = setProp(_el$52, "selectedBackgroundColor", _v$77, _p$.n));
-              _v$78 !== _p$.s && (_p$.s = setProp(_el$52, "selectedTextColor", _v$78, _p$.s));
-              _v$79 !== _p$.h && (_p$.h = setProp(_el$52, "textColor", _v$79, _p$.h));
-              _v$80 !== _p$.r && (_p$.r = setProp(_el$52, "descriptionColor", _v$80, _p$.r));
-              _v$81 !== _p$.d && (_p$.d = setProp(_el$52, "selectedDescriptionColor", _v$81, _p$.d));
+              var { primary: _v$97, panelInset: _v$98 } = colors, _v$99 = Math.min(8, suggestionOptions().length), _v$100 = suggestionOptions(), _v$101 = suggestionIndex(), _v$102 = colors.primary, _v$103 = colors.highlight, _v$104 = colors.textMuted, _v$105 = colors.textMuted, _v$106 = colors.textStrong;
+              _v$97 !== _p$.e && (_p$.e = setProp(_el$68, "borderColor", _v$97, _p$.e));
+              _v$98 !== _p$.t && (_p$.t = setProp(_el$68, "backgroundColor", _v$98, _p$.t));
+              _v$99 !== _p$.a && (_p$.a = setProp(_el$69, "height", _v$99, _p$.a));
+              _v$100 !== _p$.o && (_p$.o = setProp(_el$69, "options", _v$100, _p$.o));
+              _v$101 !== _p$.i && (_p$.i = setProp(_el$69, "selectedIndex", _v$101, _p$.i));
+              _v$102 !== _p$.n && (_p$.n = setProp(_el$69, "selectedBackgroundColor", _v$102, _p$.n));
+              _v$103 !== _p$.s && (_p$.s = setProp(_el$69, "selectedTextColor", _v$103, _p$.s));
+              _v$104 !== _p$.h && (_p$.h = setProp(_el$69, "textColor", _v$104, _p$.h));
+              _v$105 !== _p$.r && (_p$.r = setProp(_el$69, "descriptionColor", _v$105, _p$.r));
+              _v$106 !== _p$.d && (_p$.d = setProp(_el$69, "selectedDescriptionColor", _v$106, _p$.d));
               return _p$;
             }, {
               e: undefined,
@@ -28754,26 +28856,26 @@ ${issue.body || ""}`;
               r: undefined,
               d: undefined
             });
-            return _el$51;
+            return _el$68;
           })();
         })(), null);
         effect((_p$) => {
-          var _v$55 = colors.panel, _v$56 = activeField() === "title" ? colors.primary : colors.border, _v$57 = colors.panelInset, _v$58 = titleValue(), _v$59 = titlePlaceholder(), _v$60 = colors.text, _v$61 = colors.primary, _v$62 = colors.textDim, _v$63 = activeField() === "title", _v$64 = activeField() === "desc" ? colors.primary : colors.border, _v$65 = colors.panelInset, _v$66 = colors.text, _v$67 = colors.primary, _v$68 = colors.textDim, _v$69 = activeField() === "desc";
-          _v$55 !== _p$.e && (_p$.e = setProp(_el$44, "backgroundColor", _v$55, _p$.e));
-          _v$56 !== _p$.t && (_p$.t = setProp(_el$45, "borderColor", _v$56, _p$.t));
-          _v$57 !== _p$.a && (_p$.a = setProp(_el$45, "backgroundColor", _v$57, _p$.a));
-          _v$58 !== _p$.o && (_p$.o = setProp(_el$46, "value", _v$58, _p$.o));
-          _v$59 !== _p$.i && (_p$.i = setProp(_el$46, "placeholder", _v$59, _p$.i));
-          _v$60 !== _p$.n && (_p$.n = setProp(_el$46, "textColor", _v$60, _p$.n));
-          _v$61 !== _p$.s && (_p$.s = setProp(_el$46, "cursorColor", _v$61, _p$.s));
-          _v$62 !== _p$.h && (_p$.h = setProp(_el$46, "placeholderColor", _v$62, _p$.h));
-          _v$63 !== _p$.r && (_p$.r = setProp(_el$46, "focused", _v$63, _p$.r));
-          _v$64 !== _p$.d && (_p$.d = setProp(_el$47, "borderColor", _v$64, _p$.d));
-          _v$65 !== _p$.l && (_p$.l = setProp(_el$47, "backgroundColor", _v$65, _p$.l));
-          _v$66 !== _p$.u && (_p$.u = setProp(_el$48, "textColor", _v$66, _p$.u));
-          _v$67 !== _p$.c && (_p$.c = setProp(_el$48, "cursorColor", _v$67, _p$.c));
-          _v$68 !== _p$.w && (_p$.w = setProp(_el$48, "placeholderColor", _v$68, _p$.w));
-          _v$69 !== _p$.m && (_p$.m = setProp(_el$48, "focused", _v$69, _p$.m));
+          var _v$80 = colors.panel, _v$81 = activeField() === "title" ? colors.primary : colors.border, _v$82 = colors.panelInset, _v$83 = titleValue(), _v$84 = titlePlaceholder(), _v$85 = colors.text, _v$86 = colors.primary, _v$87 = colors.textDim, _v$88 = activeField() === "title", _v$89 = activeField() === "desc" ? colors.primary : colors.border, _v$90 = colors.panelInset, _v$91 = colors.text, _v$92 = colors.primary, _v$93 = colors.textDim, _v$94 = activeField() === "desc";
+          _v$80 !== _p$.e && (_p$.e = setProp(_el$61, "backgroundColor", _v$80, _p$.e));
+          _v$81 !== _p$.t && (_p$.t = setProp(_el$62, "borderColor", _v$81, _p$.t));
+          _v$82 !== _p$.a && (_p$.a = setProp(_el$62, "backgroundColor", _v$82, _p$.a));
+          _v$83 !== _p$.o && (_p$.o = setProp(_el$63, "value", _v$83, _p$.o));
+          _v$84 !== _p$.i && (_p$.i = setProp(_el$63, "placeholder", _v$84, _p$.i));
+          _v$85 !== _p$.n && (_p$.n = setProp(_el$63, "textColor", _v$85, _p$.n));
+          _v$86 !== _p$.s && (_p$.s = setProp(_el$63, "cursorColor", _v$86, _p$.s));
+          _v$87 !== _p$.h && (_p$.h = setProp(_el$63, "placeholderColor", _v$87, _p$.h));
+          _v$88 !== _p$.r && (_p$.r = setProp(_el$63, "focused", _v$88, _p$.r));
+          _v$89 !== _p$.d && (_p$.d = setProp(_el$64, "borderColor", _v$89, _p$.d));
+          _v$90 !== _p$.l && (_p$.l = setProp(_el$64, "backgroundColor", _v$90, _p$.l));
+          _v$91 !== _p$.u && (_p$.u = setProp(_el$65, "textColor", _v$91, _p$.u));
+          _v$92 !== _p$.c && (_p$.c = setProp(_el$65, "cursorColor", _v$92, _p$.c));
+          _v$93 !== _p$.w && (_p$.w = setProp(_el$65, "placeholderColor", _v$93, _p$.w));
+          _v$94 !== _p$.m && (_p$.m = setProp(_el$65, "focused", _v$94, _p$.m));
           return _p$;
         }, {
           e: undefined,
@@ -28792,36 +28894,36 @@ ${issue.body || ""}`;
           w: undefined,
           m: undefined
         });
-        return _el$44;
+        return _el$61;
       })();
     })());
     insert(_el$, (() => {
       var _c$2 = memo2(() => !!showAgentModal());
       return () => _c$2() && (() => {
-        var _el$53 = createElement("box"), _el$54 = createElement("text"), _el$55 = createElement("box"), _el$56 = createElement("text"), _el$57 = createElement("box"), _el$58 = createElement("textarea"), _el$59 = createElement("box"), _el$60 = createElement("text"), _el$61 = createElement("text");
-        insertNode(_el$53, _el$54);
-        insertNode(_el$53, _el$55);
-        insertNode(_el$53, _el$57);
-        insertNode(_el$53, _el$59);
-        setProp(_el$53, "position", "absolute");
-        setProp(_el$53, "top", 6);
-        setProp(_el$53, "left", 10);
-        setProp(_el$53, "right", 10);
-        setProp(_el$53, "borderStyle", "single");
-        setProp(_el$53, "flexDirection", "column");
-        setProp(_el$53, "padding", 2);
-        setProp(_el$53, "gap", 1);
-        setProp(_el$53, "zIndex", 1000);
-        setProp(_el$54, "content", `Create Agent Task from Issue`);
-        insertNode(_el$55, _el$56);
-        setProp(_el$55, "height", 3);
-        setProp(_el$55, "marginTop", 1);
-        setProp(_el$55, "marginBottom", 1);
-        setProp(_el$56, "wrapMode", "word");
-        insertNode(_el$57, _el$58);
-        setProp(_el$57, "height", 8);
-        setProp(_el$57, "borderStyle", "single");
-        setProp(_el$57, "padding", 1);
+        var _el$70 = createElement("box"), _el$71 = createElement("text"), _el$72 = createElement("box"), _el$73 = createElement("text"), _el$74 = createElement("box"), _el$75 = createElement("textarea"), _el$76 = createElement("box"), _el$77 = createElement("text"), _el$78 = createElement("text");
+        insertNode(_el$70, _el$71);
+        insertNode(_el$70, _el$72);
+        insertNode(_el$70, _el$74);
+        insertNode(_el$70, _el$76);
+        setProp(_el$70, "position", "absolute");
+        setProp(_el$70, "top", 6);
+        setProp(_el$70, "left", 10);
+        setProp(_el$70, "right", 10);
+        setProp(_el$70, "borderStyle", "single");
+        setProp(_el$70, "flexDirection", "column");
+        setProp(_el$70, "padding", 2);
+        setProp(_el$70, "gap", 1);
+        setProp(_el$70, "zIndex", 1000);
+        setProp(_el$71, "content", `Create Agent Task from Issue`);
+        insertNode(_el$72, _el$73);
+        setProp(_el$72, "height", 3);
+        setProp(_el$72, "marginTop", 1);
+        setProp(_el$72, "marginBottom", 1);
+        setProp(_el$73, "wrapMode", "word");
+        insertNode(_el$74, _el$75);
+        setProp(_el$74, "height", 8);
+        setProp(_el$74, "borderStyle", "single");
+        setProp(_el$74, "padding", 1);
         use((renderable) => {
           agentModalTextarea = renderable;
           if (!renderable)
@@ -28829,38 +28931,38 @@ ${issue.body || ""}`;
           if (renderable.plainText !== agentInstructions()) {
             renderable.setText(agentInstructions());
           }
-        }, _el$58);
-        setProp(_el$58, "flexGrow", 1);
-        setProp(_el$58, "placeholder", "Optional: Add custom instructions for the agent...");
-        setProp(_el$58, "backgroundColor", "transparent");
-        setProp(_el$58, "focusedBackgroundColor", "transparent");
-        setProp(_el$58, "wrapMode", "word");
-        setProp(_el$58, "focused", true);
-        setProp(_el$58, "onContentChange", () => {
+        }, _el$75);
+        setProp(_el$75, "flexGrow", 1);
+        setProp(_el$75, "placeholder", "Optional: Add custom instructions for the agent...");
+        setProp(_el$75, "backgroundColor", "transparent");
+        setProp(_el$75, "focusedBackgroundColor", "transparent");
+        setProp(_el$75, "wrapMode", "word");
+        setProp(_el$75, "focused", true);
+        setProp(_el$75, "onContentChange", () => {
           setAgentInstructions(agentModalTextarea?.plainText || "");
         });
-        insertNode(_el$59, _el$60);
-        insertNode(_el$59, _el$61);
-        setProp(_el$59, "marginTop", 1);
-        setProp(_el$59, "flexDirection", "row");
-        setProp(_el$59, "gap", 2);
-        setProp(_el$60, "content", "enter: create");
-        setProp(_el$61, "content", "esc: cancel");
+        insertNode(_el$76, _el$77);
+        insertNode(_el$76, _el$78);
+        setProp(_el$76, "marginTop", 1);
+        setProp(_el$76, "flexDirection", "row");
+        setProp(_el$76, "gap", 2);
+        setProp(_el$77, "content", "enter: create");
+        setProp(_el$78, "content", "esc: cancel");
         effect((_p$) => {
-          var { primary: _v$82, panel: _v$83, primary: _v$84 } = colors, _v$85 = TextAttributes.BOLD, _v$86 = colors.textMuted, _v$87 = `Issue: #${agentModalIssue()?.remoteNumber || agentModalIssue()?.id.slice(0, 8)} - ${agentModalIssue()?.title}`, _v$88 = colors.border, _v$89 = colors.panelInset, _v$90 = colors.text, _v$91 = colors.primary, _v$92 = colors.textDim, _v$93 = colors.textDim, _v$94 = colors.textDim;
-          _v$82 !== _p$.e && (_p$.e = setProp(_el$53, "borderColor", _v$82, _p$.e));
-          _v$83 !== _p$.t && (_p$.t = setProp(_el$53, "backgroundColor", _v$83, _p$.t));
-          _v$84 !== _p$.a && (_p$.a = setProp(_el$54, "fg", _v$84, _p$.a));
-          _v$85 !== _p$.o && (_p$.o = setProp(_el$54, "attributes", _v$85, _p$.o));
-          _v$86 !== _p$.i && (_p$.i = setProp(_el$56, "fg", _v$86, _p$.i));
-          _v$87 !== _p$.n && (_p$.n = setProp(_el$56, "content", _v$87, _p$.n));
-          _v$88 !== _p$.s && (_p$.s = setProp(_el$57, "borderColor", _v$88, _p$.s));
-          _v$89 !== _p$.h && (_p$.h = setProp(_el$57, "backgroundColor", _v$89, _p$.h));
-          _v$90 !== _p$.r && (_p$.r = setProp(_el$58, "textColor", _v$90, _p$.r));
-          _v$91 !== _p$.d && (_p$.d = setProp(_el$58, "cursorColor", _v$91, _p$.d));
-          _v$92 !== _p$.l && (_p$.l = setProp(_el$58, "placeholderColor", _v$92, _p$.l));
-          _v$93 !== _p$.u && (_p$.u = setProp(_el$60, "fg", _v$93, _p$.u));
-          _v$94 !== _p$.c && (_p$.c = setProp(_el$61, "fg", _v$94, _p$.c));
+          var { primary: _v$107, panel: _v$108, primary: _v$109 } = colors, _v$110 = TextAttributes.BOLD, _v$111 = colors.textMuted, _v$112 = `Issue: #${agentModalIssue()?.remoteNumber || agentModalIssue()?.id.slice(0, 8)} - ${agentModalIssue()?.title}`, _v$113 = colors.border, _v$114 = colors.panelInset, _v$115 = colors.text, _v$116 = colors.primary, _v$117 = colors.textDim, _v$118 = colors.textDim, _v$119 = colors.textDim;
+          _v$107 !== _p$.e && (_p$.e = setProp(_el$70, "borderColor", _v$107, _p$.e));
+          _v$108 !== _p$.t && (_p$.t = setProp(_el$70, "backgroundColor", _v$108, _p$.t));
+          _v$109 !== _p$.a && (_p$.a = setProp(_el$71, "fg", _v$109, _p$.a));
+          _v$110 !== _p$.o && (_p$.o = setProp(_el$71, "attributes", _v$110, _p$.o));
+          _v$111 !== _p$.i && (_p$.i = setProp(_el$73, "fg", _v$111, _p$.i));
+          _v$112 !== _p$.n && (_p$.n = setProp(_el$73, "content", _v$112, _p$.n));
+          _v$113 !== _p$.s && (_p$.s = setProp(_el$74, "borderColor", _v$113, _p$.s));
+          _v$114 !== _p$.h && (_p$.h = setProp(_el$74, "backgroundColor", _v$114, _p$.h));
+          _v$115 !== _p$.r && (_p$.r = setProp(_el$75, "textColor", _v$115, _p$.r));
+          _v$116 !== _p$.d && (_p$.d = setProp(_el$75, "cursorColor", _v$116, _p$.d));
+          _v$117 !== _p$.l && (_p$.l = setProp(_el$75, "placeholderColor", _v$117, _p$.l));
+          _v$118 !== _p$.u && (_p$.u = setProp(_el$77, "fg", _v$118, _p$.u));
+          _v$119 !== _p$.c && (_p$.c = setProp(_el$78, "fg", _v$119, _p$.c));
           return _p$;
         }, {
           e: undefined,
@@ -28877,19 +28979,21 @@ ${issue.body || ""}`;
           u: undefined,
           c: undefined
         });
-        return _el$53;
+        return _el$70;
       })();
     })(), null);
     effect((_p$) => {
-      var { background: _v$, border: _v$2, primary: _v$3 } = colors, _v$4 = TextAttributes.BOLD, _v$5 = colors.textMuted, _v$6 = props.state.providerLabel(), _v$7 = colors.textDim, _v$8 = hintText();
+      var { background: _v$, border: _v$2, panel: _v$3, primary: _v$4 } = colors, _v$5 = TextAttributes.BOLD, _v$6 = colors.borderMuted, _v$7 = colors.textMuted, _v$8 = props.state.providerLabel(), _v$9 = colors.textDim, _v$0 = hintText();
       _v$ !== _p$.e && (_p$.e = setProp(_el$, "backgroundColor", _v$, _p$.e));
       _v$2 !== _p$.t && (_p$.t = setProp(_el$2, "borderColor", _v$2, _p$.t));
-      _v$3 !== _p$.a && (_p$.a = setProp(_el$4, "fg", _v$3, _p$.a));
-      _v$4 !== _p$.o && (_p$.o = setProp(_el$4, "attributes", _v$4, _p$.o));
-      _v$5 !== _p$.i && (_p$.i = setProp(_el$5, "fg", _v$5, _p$.i));
-      _v$6 !== _p$.n && (_p$.n = setProp(_el$5, "content", _v$6, _p$.n));
+      _v$3 !== _p$.a && (_p$.a = setProp(_el$2, "backgroundColor", _v$3, _p$.a));
+      _v$4 !== _p$.o && (_p$.o = setProp(_el$4, "fg", _v$4, _p$.o));
+      _v$5 !== _p$.i && (_p$.i = setProp(_el$4, "attributes", _v$5, _p$.i));
+      _v$6 !== _p$.n && (_p$.n = setProp(_el$5, "fg", _v$6, _p$.n));
       _v$7 !== _p$.s && (_p$.s = setProp(_el$6, "fg", _v$7, _p$.s));
       _v$8 !== _p$.h && (_p$.h = setProp(_el$6, "content", _v$8, _p$.h));
+      _v$9 !== _p$.r && (_p$.r = setProp(_el$7, "fg", _v$9, _p$.r));
+      _v$0 !== _p$.d && (_p$.d = setProp(_el$7, "content", _v$0, _p$.d));
       return _p$;
     }, {
       e: undefined,
@@ -28899,7 +29003,9 @@ ${issue.body || ""}`;
       i: undefined,
       n: undefined,
       s: undefined,
-      h: undefined
+      h: undefined,
+      r: undefined,
+      d: undefined
     });
     return _el$;
   })();

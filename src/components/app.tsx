@@ -42,20 +42,24 @@ export function App(props: { state: AppState; cwd: string }) {
   let suggestionSeq = 0;
 
   const colors = {
-    background: "#1a1816",
-    panel: "#1a1816",
-    panelInset: "#222220",
-    border: "#3d3832",
-    borderMuted: "#4a443d",
-    textMuted: "#a18f7a",
-    textDim: "#6b625a",
-    text: "#d4c5b0",
-    textStrong: "#f4ede4",
-    primary: "#d97706",
-    primaryBright: "#f59e0b",
-    accent: "#cc9b6d",
-    accentBg: "#F7AE82",
-    highlight: "#2d2722",
+    background: "#0f0e0d",
+    panel: "#16141f",
+    panelInset: "#1f1d2a",
+    border: "#2d2a3d",
+    borderMuted: "#3a3648",
+    textMuted: "#9896a5",
+    textDim: "#6e6b7f",
+    text: "#d5d3e0",
+    textStrong: "#f4f2ff",
+    primary: "#8b7ff0",
+    primaryBright: "#9f92f5",
+    accent: "#b8a6ff",
+    accentBg: "#6d5fff",
+    highlight: "#221f32",
+    success: "#6fcf97",
+    info: "#56ccf2",
+    warning: "#f2c94c",
+    error: "#eb5757",
   } as const;
 
   const syntaxStyle = SyntaxStyle.fromTheme([
@@ -65,8 +69,8 @@ export function App(props: { state: AppState; cwd: string }) {
       style: { foreground: colors.textMuted, italic: true },
     },
     { scope: ["keyword"], style: { foreground: colors.primary, bold: true } },
-    { scope: ["string"], style: { foreground: "#9dc896" } },
-    { scope: ["number"], style: { foreground: "#88b8d8" } },
+    { scope: ["string"], style: { foreground: colors.success } },
+    { scope: ["number"], style: { foreground: colors.info } },
     { scope: ["punctuation"], style: { foreground: colors.textMuted } },
     { scope: ["markup"], style: { foreground: colors.textStrong } },
     {
@@ -82,10 +86,10 @@ export function App(props: { state: AppState; cwd: string }) {
       style: { foreground: colors.textStrong, bold: true },
     },
     { scope: ["markup.list"], style: { foreground: colors.textMuted } },
-    { scope: ["markup.code"], style: { foreground: "#a8c5d8" } },
+    { scope: ["markup.code"], style: { foreground: colors.accent } },
     {
       scope: ["markup.link"],
-      style: { foreground: "#88a8c8", underline: true },
+      style: { foreground: colors.info, underline: true },
     },
     {
       scope: ["markup.quote"],
@@ -994,13 +998,15 @@ export function App(props: { state: AppState; cwd: string }) {
         paddingBottom={1}
         borderStyle="single"
         borderColor={colors.border}
+        backgroundColor={colors.panel}
       >
-        <box flexDirection="row" gap={2}>
+        <box flexDirection="row" gap={2} alignItems="center">
           <text
             fg={colors.primary}
             attributes={TextAttributes.BOLD}
             content="📋 openissue"
           />
+          <text fg={colors.borderMuted} content="│" />
           <text fg={colors.textMuted} content={props.state.providerLabel()} />
         </box>
         <text fg={colors.textDim} content={hintText()} />
@@ -1022,31 +1028,74 @@ export function App(props: { state: AppState; cwd: string }) {
               paddingRight={2}
               paddingTop={1}
               paddingBottom={1}
+              backgroundColor={colors.panelInset}
+              borderStyle="single"
+              borderColor={colors.border}
             >
               {viewMode() === "issues" ? (
                 <>
                   <box flexDirection="row" gap={3}>
                     <text
-                      fg={colors.textMuted}
-                      content={`Total ${stats().total}`}
+                      fg={colors.textDim}
+                      content={`Total: `}
+                    />
+                    <text
+                      fg={colors.text}
+                      attributes={TextAttributes.BOLD}
+                      content={`${stats().total}`}
+                    />
+                    <text
+                      fg={colors.borderMuted}
+                      content="│"
+                      marginLeft={1}
+                    />
+                    <text
+                      fg={colors.textDim}
+                      content={`Open: `}
+                      marginLeft={1}
                     />
                     <text
                       fg={colors.primary}
-                      content={`Open ${stats().open}`}
+                      attributes={TextAttributes.BOLD}
+                      content={`${stats().open}`}
+                    />
+                    <text
+                      fg={colors.borderMuted}
+                      content="│"
+                      marginLeft={1}
+                    />
+                    <text
+                      fg={colors.textDim}
+                      content={`Closed: `}
+                      marginLeft={1}
                     />
                     <text
                       fg={colors.textMuted}
-                      content={`Closed ${stats().closed}`}
+                      content={`${stats().closed}`}
                     />
                   </box>
                   <box flexDirection="row" gap={3}>
                     <text
-                      fg={colors.textMuted}
-                      content={`Synced ${stats().synced}`}
+                      fg={colors.textDim}
+                      content={`Synced: `}
                     />
                     <text
-                      fg={colors.textMuted}
-                      content={`Local ${stats().local}`}
+                      fg={colors.success}
+                      content={`${stats().synced}`}
+                    />
+                    <text
+                      fg={colors.borderMuted}
+                      content="│"
+                      marginLeft={1}
+                    />
+                    <text
+                      fg={colors.textDim}
+                      content={`Local: `}
+                      marginLeft={1}
+                    />
+                    <text
+                      fg={colors.info}
+                      content={`${stats().local}`}
                     />
                   </box>
                 </>
@@ -1054,26 +1103,66 @@ export function App(props: { state: AppState; cwd: string }) {
                 <>
                   <box flexDirection="row" gap={3}>
                     <text
-                      fg={colors.textMuted}
-                      content={`Total ${agentStats().total}`}
+                      fg={colors.textDim}
+                      content={`Total: `}
+                    />
+                    <text
+                      fg={colors.text}
+                      attributes={TextAttributes.BOLD}
+                      content={`${agentStats().total}`}
+                    />
+                    <text
+                      fg={colors.borderMuted}
+                      content="│"
+                      marginLeft={1}
+                    />
+                    <text
+                      fg={colors.textDim}
+                      content={`Active: `}
+                      marginLeft={1}
                     />
                     <text
                       fg={colors.primaryBright}
-                      content={`Active ${agentStats().active}`}
+                      attributes={TextAttributes.BOLD}
+                      content={`${agentStats().active}`}
                     />
                     <text
-                      fg={colors.primary}
-                      content={`Done ${agentStats().completed}`}
+                      fg={colors.borderMuted}
+                      content="│"
+                      marginLeft={1}
+                    />
+                    <text
+                      fg={colors.textDim}
+                      content={`Done: `}
+                      marginLeft={1}
+                    />
+                    <text
+                      fg={colors.success}
+                      content={`${agentStats().completed}`}
                     />
                   </box>
                   <box flexDirection="row" gap={3}>
                     <text
                       fg={colors.textDim}
-                      content={`Failed ${agentStats().failed}`}
+                      content={`Failed: `}
+                    />
+                    <text
+                      fg={colors.error}
+                      content={`${agentStats().failed}`}
+                    />
+                    <text
+                      fg={colors.borderMuted}
+                      content="│"
+                      marginLeft={1}
+                    />
+                    <text
+                      fg={colors.textDim}
+                      content={`Draft: `}
+                      marginLeft={1}
                     />
                     <text
                       fg={colors.textMuted}
-                      content={`Draft ${agentStats().draft}`}
+                      content={`${agentStats().draft}`}
                     />
                   </box>
                 </>
@@ -1099,9 +1188,9 @@ export function App(props: { state: AppState; cwd: string }) {
                   showScrollIndicator
                   focused
                   backgroundColor="transparent"
-                  selectedBackgroundColor={colors.primary}
-                  textColor={colors.textStrong}
-                  selectedTextColor={colors.highlight}
+                  selectedBackgroundColor={colors.highlight}
+                  textColor={colors.text}
+                  selectedTextColor={colors.primary}
                   onChange={(index) => setSelectedIndex(index)}
                   onSelect={(index) => {
                     const issue = issues()[index];
@@ -1125,9 +1214,9 @@ export function App(props: { state: AppState; cwd: string }) {
                 showScrollIndicator
                 focused
                 backgroundColor="transparent"
-                selectedBackgroundColor={colors.primary}
-                textColor={colors.textStrong}
-                selectedTextColor={colors.highlight}
+                selectedBackgroundColor={colors.highlight}
+                textColor={colors.text}
+                selectedTextColor={colors.primary}
                 onChange={(index) => setSelectedIndex(index)}
                 onSelect={(index) => {
                   // View logs for selected agent task
