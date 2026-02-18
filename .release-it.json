@@ -1,5 +1,4 @@
 {
-  "increment": "patch",
   "git": {
     "commitMessage": "chore: bump version to ${version}",
     "requireCleanWorkingDir": true,
@@ -16,8 +15,5 @@
   },
   "npm": {
     "publish": false
-  },
-  "hooks": {
-    "before:init": []
   }
 }

@@ -1,30 +1,36 @@
 # Release Process
 
-This project uses a **local pre-push hook** for automated version bumping and release management. No CI/CD pipeline needed!
+This project uses **`release-it`** for automated version bumping, tagging, and publishing. No CI/CD pipeline needed!
 
-## How It Works
+## Quick Start
 
-When you push to `master` or `main`:
+```bash
+# Build, bump patch version, create tag, and push
+./prepare-release.sh
 
-1. **Build Check**: The pre-push hook runs `bun run build`
-2. **Version Bump**: If successful, `release-it` bumps the patch version
-3. **Git Tag**: Creates a git tag (e.g., `v0.1.2`)
-4. **Push**: Pushes the version bump commit and tag to remote
+# Or bump specific version
+./prepare-release.sh minor
+./prepare-release.sh major
+```
+
+That's it! The script will:
+1. ✅ Build the project (`bun run build`)
+2. 📝 Commit build artifacts (dist/)
+3. 📦 Bump version in `package.json`
+4. 🏷️ Create git tag (e.g., `v0.1.2`)
+5. 📤 Push everything to remote
 
 ## Manual Release (if needed)
 
 ```bash
 # Bump patch version (0.1.1 → 0.1.2)
-bun run release
+bunx release-it --ci -i patch
 
 # Bump minor version (0.1.1 → 0.2.0)
-bun run release -- --increment minor
+bunx release-it --ci -i minor
 
 # Bump major version (0.1.1 → 1.0.0)
-bun run release -- --increment major
-
-# With options
-bun run release -- --increment minor --ci --no-npm
+bunx release-it --ci -i major
 ```
 
 ## Configuration
@@ -32,38 +38,50 @@ bun run release -- --increment minor --ci --no-npm
 Release settings are in `.release-it.json`:
 
 - **git.commitMessage**: Commit message format
-- **git.tagName**: Git tag format
-- **github.release**: Set to `false` (no GitHub releases)
-- **npm.publish**: Set to `false` (manual if needed)
+- **git.tagName**: Git tag format (`v${version}`)
+- **git.push**: Automatically push to remote
+- **npm.publish**: Set to `false` (no npm publishing)
 
 ## What Gets Committed
 
 - `package.json` - Updated version
+- `dist/` - Built files (if changed)
 - Git tag - `v{version}`
 
-## Skipping Automatic Bump
+## Version History
 
-If you want to push without triggering version bump:
+Versions are tracked via git tags. View them with:
 
 ```bash
-git push --no-verify
+git tag
+git log --oneline --decorate
 ```
-
-⚠️ Use sparingly! The hook ensures builds always succeed on main branch.
 
 ## Troubleshooting
 
 **"Build failed. Aborting push."**
-- Fix the build error locally first: `bun run build`
-- Then try pushing again
+- Fix the build error locally: `bun run build`
+- Then run the script again
 
-**"Working directory has uncommitted changes"**
-- Commit or stash changes before pushing
+**"Working directory is not clean"**
+- Commit any pending changes first: `git add -A && git commit -m "..."`
+- Then run the script again
 
-**"Release-it: Git ref does not exist"**
-- First push to a new branch might skip version bump (expected)
-- Subsequent pushes will bump automatically
-# Test push to trigger version bump
-test push with version bump
-# More testing
-# Final test
+**"Tag already exists"**
+- You're trying to release a version that already exists
+- Check `git tag` to see existing versions
+- The script will auto-increment if you run it again
+
+## Workflow Example
+
+```bash
+# Make changes and commit
+git add .
+git commit -m "feat: add new feature"
+
+# When ready to release:
+./prepare-release.sh
+
+# Or for bigger changes:
+./prepare-release.sh minor
+```
