@@ -1,5 +1,5 @@
 // @bun
-// node_modules/@opentui/core/index-zrvzvh6r.js
+// node_modules/@opentui/core/index-vnvba6q9.js
 import { Buffer as Buffer2 } from "buffer";
 import { EventEmitter } from "events";
 import { EventEmitter as EventEmitter2 } from "events";
@@ -40,7 +40,7 @@ var highlights_default5 = "./highlights-hk7bwhj4.scm";
 // node_modules/@opentui/core/assets/zig/tree-sitter-zig.wasm
 var tree_sitter_zig_default = "./tree-sitter-zig-e78zbjpm.wasm";
 
-// node_modules/@opentui/core/index-zrvzvh6r.js
+// node_modules/@opentui/core/index-vnvba6q9.js
 import { resolve as resolve2, isAbsolute, parse } from "path";
 import { existsSync } from "fs";
 import { basename, join } from "path";
@@ -5846,8 +5846,23 @@ function extractCompleteSequences(buffer) {
         return { sequences, remainder: remaining };
       }
     } else {
-      sequences.push(remaining[0]);
-      pos++;
+      const code = remaining.charCodeAt(0);
+      if (code >= 55296 && code <= 56319) {
+        if (remaining.length === 1) {
+          return { sequences, remainder: remaining };
+        }
+        const next = remaining.charCodeAt(1);
+        if (next >= 56320 && next <= 57343) {
+          sequences.push(remaining.slice(0, 2));
+          pos += 2;
+        } else {
+          sequences.push(remaining[0]);
+          pos++;
+        }
+      } else {
+        sequences.push(remaining[0]);
+        pos++;
+      }
     }
   }
   return { sequences, remainder: "" };
@@ -6117,95 +6132,168 @@ class MouseParser {
   reset() {
     this.mouseButtonsPressed.clear();
   }
+  decodeInput(data) {
+    return data.toString();
+  }
   parseMouseEvent(data) {
-    const str = data.toString();
-    const sgrMatch = str.match(/\x1b\[<(\d+);(\d+);(\d+)([Mm])/);
-    if (sgrMatch) {
-      const [, buttonCode, x, y, pressRelease] = sgrMatch;
-      const rawButtonCode = parseInt(buttonCode);
-      const button = rawButtonCode & 3;
-      const isScroll = (rawButtonCode & 64) !== 0;
-      const scrollDirection = !isScroll ? undefined : MouseParser.SCROLL_DIRECTIONS[button];
-      const isMotion = (rawButtonCode & 32) !== 0;
-      const modifiers = {
-        shift: (rawButtonCode & 4) !== 0,
-        alt: (rawButtonCode & 8) !== 0,
-        ctrl: (rawButtonCode & 16) !== 0
-      };
-      let type;
-      let scrollInfo;
-      if (isScroll && pressRelease === "M") {
-        type = "scroll";
-        scrollInfo = {
-          direction: scrollDirection,
-          delta: 1
-        };
-      } else if (isMotion) {
-        const isDragging = this.mouseButtonsPressed.size > 0;
-        if (button === 3) {
-          type = "move";
-        } else if (isDragging) {
-          type = "drag";
-        } else {
-          type = "move";
-        }
-      } else {
-        type = pressRelease === "M" ? "down" : "up";
-        if (type === "down" && button !== 3) {
-          this.mouseButtonsPressed.add(button);
-        } else if (type === "up") {
-          this.mouseButtonsPressed.clear();
-        }
+    const str = this.decodeInput(data);
+    const parsed = this.parseMouseSequenceAt(str, 0);
+    return parsed?.event ?? null;
+  }
+  parseAllMouseEvents(data) {
+    const str = this.decodeInput(data);
+    const events = [];
+    let offset = 0;
+    while (offset < str.length) {
+      const parsed = this.parseMouseSequenceAt(str, offset);
+      if (!parsed) {
+        break;
       }
-      return {
-        type,
-        button: button === 3 ? 0 : button,
-        x: parseInt(x) - 1,
-        y: parseInt(y) - 1,
-        modifiers,
-        scroll: scrollInfo
-      };
+      events.push(parsed.event);
+      offset += parsed.consumed;
     }
-    if (str.startsWith("\x1B[M") && str.length >= 6) {
-      const buttonByte = str.charCodeAt(3) - 32;
-      const x = str.charCodeAt(4) - 33;
-      const y = str.charCodeAt(5) - 33;
-      const button = buttonByte & 3;
-      const isScroll = (buttonByte & 64) !== 0;
-      const isMotion = (buttonByte & 32) !== 0;
-      const scrollDirection = !isScroll ? undefined : MouseParser.SCROLL_DIRECTIONS[button];
-      const modifiers = {
-        shift: (buttonByte & 4) !== 0,
-        alt: (buttonByte & 8) !== 0,
-        ctrl: (buttonByte & 16) !== 0
-      };
-      let type;
-      let actualButton;
-      let scrollInfo;
-      if (isScroll) {
-        type = "scroll";
-        actualButton = 0;
-        scrollInfo = {
-          direction: scrollDirection,
-          delta: 1
-        };
-      } else if (isMotion) {
-        type = "move";
-        actualButton = button === 3 ? -1 : button;
-      } else {
-        type = button === 3 ? "up" : "down";
-        actualButton = button === 3 ? 0 : button;
-      }
-      return {
-        type,
-        button: actualButton,
-        x,
-        y,
-        modifiers,
-        scroll: scrollInfo
-      };
+    return events;
+  }
+  parseMouseSequenceAt(str, offset) {
+    if (!str.startsWith("\x1B[", offset))
+      return null;
+    const introducer = str[offset + 2];
+    if (introducer === "<") {
+      return this.parseSgrSequence(str, offset);
+    }
+    if (introducer === "M") {
+      return this.parseBasicSequence(str, offset);
     }
     return null;
+  }
+  parseSgrSequence(str, offset) {
+    let index = offset + 3;
+    const values = [0, 0, 0];
+    let part = 0;
+    let hasDigit = false;
+    while (index < str.length) {
+      const char = str[index];
+      const charCode = str.charCodeAt(index);
+      if (charCode >= 48 && charCode <= 57) {
+        hasDigit = true;
+        values[part] = values[part] * 10 + (charCode - 48);
+        index++;
+        continue;
+      }
+      switch (char) {
+        case ";": {
+          if (!hasDigit || part >= 2)
+            return null;
+          part++;
+          hasDigit = false;
+          index++;
+          break;
+        }
+        case "M":
+        case "m": {
+          if (!hasDigit || part !== 2)
+            return null;
+          return {
+            event: this.decodeSgrEvent(values[0], values[1], values[2], char),
+            consumed: index - offset + 1
+          };
+        }
+        default:
+          return null;
+      }
+    }
+    return null;
+  }
+  parseBasicSequence(str, offset) {
+    if (offset + 6 > str.length)
+      return null;
+    const buttonByte = str.charCodeAt(offset + 3) - 32;
+    const x = str.charCodeAt(offset + 4) - 33;
+    const y = str.charCodeAt(offset + 5) - 33;
+    return {
+      event: this.decodeBasicEvent(buttonByte, x, y),
+      consumed: 6
+    };
+  }
+  decodeSgrEvent(rawButtonCode, wireX, wireY, pressRelease) {
+    const button = rawButtonCode & 3;
+    const isScroll = (rawButtonCode & 64) !== 0;
+    const scrollDirection = !isScroll ? undefined : MouseParser.SCROLL_DIRECTIONS[button];
+    const isMotion = (rawButtonCode & 32) !== 0;
+    const modifiers = {
+      shift: (rawButtonCode & 4) !== 0,
+      alt: (rawButtonCode & 8) !== 0,
+      ctrl: (rawButtonCode & 16) !== 0
+    };
+    let type;
+    let scrollInfo;
+    if (isScroll && pressRelease === "M") {
+      type = "scroll";
+      scrollInfo = {
+        direction: scrollDirection,
+        delta: 1
+      };
+    } else if (isMotion) {
+      const isDragging = this.mouseButtonsPressed.size > 0;
+      if (button === 3) {
+        type = "move";
+      } else if (isDragging) {
+        type = "drag";
+      } else {
+        type = "move";
+      }
+    } else {
+      type = pressRelease === "M" ? "down" : "up";
+      if (type === "down" && button !== 3) {
+        this.mouseButtonsPressed.add(button);
+      } else if (type === "up") {
+        this.mouseButtonsPressed.clear();
+      }
+    }
+    return {
+      type,
+      button: button === 3 ? 0 : button,
+      x: wireX - 1,
+      y: wireY - 1,
+      modifiers,
+      scroll: scrollInfo
+    };
+  }
+  decodeBasicEvent(buttonByte, x, y) {
+    const button = buttonByte & 3;
+    const isScroll = (buttonByte & 64) !== 0;
+    const isMotion = (buttonByte & 32) !== 0;
+    const scrollDirection = !isScroll ? undefined : MouseParser.SCROLL_DIRECTIONS[button];
+    const modifiers = {
+      shift: (buttonByte & 4) !== 0,
+      alt: (buttonByte & 8) !== 0,
+      ctrl: (buttonByte & 16) !== 0
+    };
+    let type;
+    let actualButton;
+    let scrollInfo;
+    if (isScroll) {
+      type = "scroll";
+      actualButton = 0;
+      scrollInfo = {
+        direction: scrollDirection,
+        delta: 1
+      };
+    } else if (isMotion) {
+      type = "move";
+      actualButton = button === 3 ? -1 : button;
+    } else {
+      type = button === 3 ? "up" : "down";
+      actualButton = button === 3 ? 0 : button;
+    }
+    return {
+      type,
+      button: actualButton,
+      x,
+      y,
+      modifiers,
+      scroll: scrollInfo
+    };
   }
 }
 
@@ -9410,6 +9498,59 @@ var CursorStateStruct = defineStruct([
   ["b", "f32"],
   ["a", "f32"]
 ]);
+var CursorStyleOptionsStruct = defineStruct([
+  ["style", "u8", { default: 255 }],
+  ["blinking", "u8", { default: 255 }],
+  [
+    "color",
+    "pointer",
+    {
+      optional: true,
+      packTransform: rgbaPackTransform,
+      unpackTransform: rgbaUnpackTransform
+    }
+  ],
+  ["cursor", "u8", { default: 255 }]
+]);
+var GrowthPolicyEnum = defineEnum({ grow: 0, block: 1 }, "u8");
+var NativeSpanFeedOptionsStruct = defineStruct([
+  ["chunkSize", "u32", { default: 65536 }],
+  ["initialChunks", "u32", { default: 2 }],
+  ["maxBytes", "u64", { default: 0n }],
+  ["growthPolicy", GrowthPolicyEnum, { default: "grow" }],
+  ["autoCommitOnFull", "bool_u8", { default: true }],
+  ["spanQueueCapacity", "u32", { default: 0 }]
+]);
+var NativeSpanFeedStatsStruct = defineStruct([
+  ["bytesWritten", "u64"],
+  ["spansCommitted", "u64"],
+  ["chunks", "u32"],
+  ["pendingSpans", "u32"]
+]);
+var SpanInfoStruct = defineStruct([
+  ["chunkPtr", "pointer"],
+  ["offset", "u32"],
+  ["len", "u32"],
+  ["chunkIndex", "u32"],
+  ["reserved", "u32", { default: 0 }]
+], {
+  reduceValue: (value) => ({
+    chunkPtr: value.chunkPtr,
+    offset: value.offset,
+    len: value.len,
+    chunkIndex: value.chunkIndex
+  })
+});
+var ReserveInfoStruct = defineStruct([
+  ["ptr", "pointer"],
+  ["len", "u32"],
+  ["reserved", "u32", { default: 0 }]
+], {
+  reduceValue: (value) => ({
+    ptr: value.ptr,
+    len: value.len
+  })
+});
 var module = await import(`@opentui/core-${process.platform}-${process.arch}/index.ts`);
 var targetLibPath = module.default;
 if (isBunfsPath(targetLibPath)) {
@@ -9454,9 +9595,24 @@ registerEnvVar({
   type: "boolean",
   default: false
 });
+var CURSOR_STYLE_TO_ID = { block: 0, line: 1, underline: 2 };
+var CURSOR_ID_TO_STYLE = ["block", "line", "underline"];
+var MOUSE_STYLE_TO_ID = { default: 0, pointer: 1, text: 2, crosshair: 3, move: 4, "not-allowed": 5 };
 var globalTraceSymbols = null;
 var globalFFILogWriter = null;
 var exitHandlerRegistered = false;
+function toPointer(value) {
+  if (typeof value === "bigint") {
+    if (value > BigInt(Number.MAX_SAFE_INTEGER)) {
+      throw new Error("Pointer exceeds safe integer range");
+    }
+    return Number(value);
+  }
+  return value;
+}
+function toNumber(value) {
+  return typeof value === "bigint" ? Number(value) : value;
+}
 function getOpenTUILib(libPath) {
   const resolvedLibPath = libPath || targetLibPath;
   const rawSymbols = dlopen(resolvedLibPath, {
@@ -9616,15 +9772,15 @@ function getOpenTUILib(libPath) {
       args: ["ptr", "i32", "i32", "bool"],
       returns: "void"
     },
-    setCursorStyle: {
-      args: ["ptr", "ptr", "u32", "bool"],
-      returns: "void"
-    },
     setCursorColor: {
       args: ["ptr", "ptr"],
       returns: "void"
     },
     getCursorState: {
+      args: ["ptr", "ptr"],
+      returns: "void"
+    },
+    setCursorStyleOptions: {
       args: ["ptr", "ptr"],
       returns: "void"
     },
@@ -10355,6 +10511,54 @@ function getOpenTUILib(libPath) {
     bufferDrawChar: {
       args: ["ptr", "u32", "u32", "u32", "ptr", "ptr", "u32"],
       returns: "void"
+    },
+    createNativeSpanFeed: {
+      args: ["ptr"],
+      returns: "ptr"
+    },
+    attachNativeSpanFeed: {
+      args: ["ptr"],
+      returns: "i32"
+    },
+    destroyNativeSpanFeed: {
+      args: ["ptr"],
+      returns: "void"
+    },
+    streamWrite: {
+      args: ["ptr", "ptr", "u64"],
+      returns: "i32"
+    },
+    streamCommit: {
+      args: ["ptr"],
+      returns: "i32"
+    },
+    streamDrainSpans: {
+      args: ["ptr", "ptr", "u32"],
+      returns: "u32"
+    },
+    streamClose: {
+      args: ["ptr"],
+      returns: "i32"
+    },
+    streamReserve: {
+      args: ["ptr", "u32", "ptr"],
+      returns: "i32"
+    },
+    streamCommitReserved: {
+      args: ["ptr", "u32"],
+      returns: "i32"
+    },
+    streamSetOptions: {
+      args: ["ptr", "ptr"],
+      returns: "i32"
+    },
+    streamGetStats: {
+      args: ["ptr", "ptr"],
+      returns: "i32"
+    },
+    streamSetCallback: {
+      args: ["ptr", "ptr"],
+      returns: "void"
     }
   });
   if (env.OTUI_DEBUG_FFI || env.OTUI_TRACE_FFI) {
@@ -10520,6 +10724,8 @@ class FFIRenderLib {
   eventCallbackWrapper;
   _nativeEvents = new EventEmitter5;
   _anyEventHandlers = [];
+  nativeSpanFeedCallbackWrapper = null;
+  nativeSpanFeedHandlers = new Map;
   constructor(libPath) {
     this.opentui = getOpenTUILib(libPath);
     this.setupLogging();
@@ -10608,6 +10814,25 @@ class FFIRenderLib {
       throw new Error("Failed to create event callback");
     }
     this.setEventCallback(eventCallback.ptr);
+  }
+  ensureNativeSpanFeedCallback() {
+    if (this.nativeSpanFeedCallbackWrapper) {
+      return this.nativeSpanFeedCallbackWrapper;
+    }
+    const callback = new JSCallback((streamPtr, eventId, arg0, arg1) => {
+      const handler = this.nativeSpanFeedHandlers.get(toPointer(streamPtr));
+      if (handler) {
+        handler(eventId, arg0, arg1);
+      }
+    }, {
+      args: ["ptr", "u32", "ptr", "u64"],
+      returns: "void"
+    });
+    this.nativeSpanFeedCallbackWrapper = callback;
+    if (!callback.ptr) {
+      throw new Error("Failed to create native span feed callback");
+    }
+    return callback;
   }
   setEventCallback(callbackPtr) {
     this.opentui.symbols.setEventCallback(callbackPtr);
@@ -10776,10 +11001,6 @@ class FFIRenderLib {
   setCursorPosition(renderer, x, y, visible) {
     this.opentui.symbols.setCursorPosition(renderer, x, y, visible);
   }
-  setCursorStyle(renderer, style, blinking) {
-    const stylePtr = this.encoder.encode(style);
-    this.opentui.symbols.setCursorStyle(renderer, stylePtr, style.length, blinking);
-  }
   setCursorColor(renderer, color) {
     this.opentui.symbols.setCursorColor(renderer, color.buffer);
   }
@@ -10787,19 +11008,21 @@ class FFIRenderLib {
     const cursorBuffer = new ArrayBuffer(CursorStateStruct.size);
     this.opentui.symbols.getCursorState(renderer, ptr4(cursorBuffer));
     const struct = CursorStateStruct.unpack(cursorBuffer);
-    const styleMap = {
-      0: "block",
-      1: "line",
-      2: "underline"
-    };
     return {
       x: struct.x,
       y: struct.y,
       visible: struct.visible,
-      style: styleMap[struct.style] || "block",
+      style: CURSOR_ID_TO_STYLE[struct.style] ?? "block",
       blinking: struct.blinking,
       color: RGBA.fromValues(struct.r, struct.g, struct.b, struct.a)
     };
+  }
+  setCursorStyleOptions(renderer, options) {
+    const style = options.style != null ? CURSOR_STYLE_TO_ID[options.style] : 255;
+    const blinking = options.blinking != null ? options.blinking ? 1 : 0 : 255;
+    const cursor = options.cursor != null ? MOUSE_STYLE_TO_ID[options.cursor] : 255;
+    const buffer = CursorStyleOptionsStruct.pack({ style, blinking, color: options.color, cursor });
+    this.opentui.symbols.setCursorStyleOptions(renderer, ptr4(buffer));
   }
   render(renderer, force) {
     this.opentui.symbols.render(renderer, force);
@@ -11639,6 +11862,73 @@ class FFIRenderLib {
   }
   bufferDrawChar(buffer, char, x, y, fg2, bg2, attributes = 0) {
     this.opentui.symbols.bufferDrawChar(buffer, char, x, y, fg2.buffer, bg2.buffer, attributes);
+  }
+  registerNativeSpanFeedStream(stream, handler) {
+    const callback = this.ensureNativeSpanFeedCallback();
+    this.nativeSpanFeedHandlers.set(toPointer(stream), handler);
+    this.opentui.symbols.streamSetCallback(stream, callback.ptr);
+  }
+  unregisterNativeSpanFeedStream(stream) {
+    this.opentui.symbols.streamSetCallback(stream, null);
+    this.nativeSpanFeedHandlers.delete(toPointer(stream));
+  }
+  createNativeSpanFeed(options) {
+    const optionsBuffer = options == null ? null : NativeSpanFeedOptionsStruct.pack(options);
+    const streamPtr = this.opentui.symbols.createNativeSpanFeed(optionsBuffer ? ptr4(optionsBuffer) : null);
+    if (!streamPtr) {
+      throw new Error("Failed to create stream");
+    }
+    return toPointer(streamPtr);
+  }
+  attachNativeSpanFeed(stream) {
+    return this.opentui.symbols.attachNativeSpanFeed(stream);
+  }
+  destroyNativeSpanFeed(stream) {
+    this.opentui.symbols.destroyNativeSpanFeed(stream);
+    this.nativeSpanFeedHandlers.delete(toPointer(stream));
+  }
+  streamWrite(stream, data) {
+    const bytes = typeof data === "string" ? this.encoder.encode(data) : data;
+    return this.opentui.symbols.streamWrite(stream, ptr4(bytes), bytes.length);
+  }
+  streamCommit(stream) {
+    return this.opentui.symbols.streamCommit(stream);
+  }
+  streamDrainSpans(stream, outBuffer, maxSpans) {
+    const count = this.opentui.symbols.streamDrainSpans(stream, ptr4(outBuffer), maxSpans);
+    return toNumber(count);
+  }
+  streamClose(stream) {
+    return this.opentui.symbols.streamClose(stream);
+  }
+  streamSetOptions(stream, options) {
+    const optionsBuffer = NativeSpanFeedOptionsStruct.pack(options);
+    return this.opentui.symbols.streamSetOptions(stream, ptr4(optionsBuffer));
+  }
+  streamGetStats(stream) {
+    const statsBuffer = new ArrayBuffer(NativeSpanFeedStatsStruct.size);
+    const status = this.opentui.symbols.streamGetStats(stream, ptr4(statsBuffer));
+    if (status !== 0) {
+      return null;
+    }
+    const stats = NativeSpanFeedStatsStruct.unpack(statsBuffer);
+    return {
+      bytesWritten: typeof stats.bytesWritten === "bigint" ? stats.bytesWritten : BigInt(stats.bytesWritten),
+      spansCommitted: typeof stats.spansCommitted === "bigint" ? stats.spansCommitted : BigInt(stats.spansCommitted),
+      chunks: stats.chunks,
+      pendingSpans: stats.pendingSpans
+    };
+  }
+  streamReserve(stream, minLen) {
+    const reserveBuffer = new ArrayBuffer(ReserveInfoStruct.size);
+    const status = this.opentui.symbols.streamReserve(stream, minLen, ptr4(reserveBuffer));
+    if (status !== 0) {
+      return { status, info: null };
+    }
+    return { status, info: ReserveInfoStruct.unpack(reserveBuffer) };
+  }
+  streamCommitReserved(stream, length) {
+    return this.opentui.symbols.streamCommitReserved(stream, length);
   }
   createSyntaxStyle() {
     const stylePtr = this.opentui.symbols.createSyntaxStyle();
@@ -14818,6 +15108,7 @@ class CliRenderer extends EventEmitter9 {
   _latestPointer = { x: 0, y: 0 };
   _hasPointer = false;
   _lastPointerModifiers = { shift: false, alt: false, ctrl: false };
+  _currentMousePointerStyle = undefined;
   _currentFocusedRenderable = null;
   lifecyclePasses = new Set;
   _openConsoleOnError = true;
@@ -15402,127 +15693,135 @@ Captured output:
     return event;
   }
   handleMouseData(data) {
-    const mouseEvent = this.mouseParser.parseMouseEvent(data);
-    if (mouseEvent) {
-      if (this._splitHeight > 0) {
-        if (mouseEvent.y < this.renderOffset) {
-          return false;
-        }
-        mouseEvent.y -= this.renderOffset;
+    const mouseEvents = this.mouseParser.parseAllMouseEvents(data);
+    if (mouseEvents.length === 0)
+      return false;
+    let anyHandled = false;
+    for (const mouseEvent of mouseEvents) {
+      if (this.processSingleMouseEvent(mouseEvent)) {
+        anyHandled = true;
       }
-      this._latestPointer.x = mouseEvent.x;
-      this._latestPointer.y = mouseEvent.y;
-      this._hasPointer = true;
-      this._lastPointerModifiers = mouseEvent.modifiers;
-      if (this._console.visible) {
-        const consoleBounds = this._console.bounds;
-        if (mouseEvent.x >= consoleBounds.x && mouseEvent.x < consoleBounds.x + consoleBounds.width && mouseEvent.y >= consoleBounds.y && mouseEvent.y < consoleBounds.y + consoleBounds.height) {
-          const event2 = new MouseEvent(null, mouseEvent);
-          const handled = this._console.handleMouse(event2);
-          if (handled)
-            return true;
-        }
+    }
+    return anyHandled;
+  }
+  processSingleMouseEvent(mouseEvent) {
+    if (this._splitHeight > 0) {
+      if (mouseEvent.y < this.renderOffset) {
+        return false;
       }
-      if (mouseEvent.type === "scroll") {
-        const maybeRenderableId2 = this.hitTest(mouseEvent.x, mouseEvent.y);
-        const maybeRenderable2 = Renderable.renderablesByNumber.get(maybeRenderableId2);
-        const fallbackTarget = this._currentFocusedRenderable && !this._currentFocusedRenderable.isDestroyed && this._currentFocusedRenderable.focused ? this._currentFocusedRenderable : null;
-        const scrollTarget = maybeRenderable2 ?? fallbackTarget;
-        if (scrollTarget) {
-          const event2 = new MouseEvent(scrollTarget, mouseEvent);
-          scrollTarget.processMouseEvent(event2);
-        }
-        return true;
-      }
-      const maybeRenderableId = this.hitTest(mouseEvent.x, mouseEvent.y);
-      const sameElement = maybeRenderableId === this.lastOverRenderableNum;
-      this.lastOverRenderableNum = maybeRenderableId;
-      const maybeRenderable = Renderable.renderablesByNumber.get(maybeRenderableId);
-      if (mouseEvent.type === "down" && mouseEvent.button === 0 && !this.currentSelection?.isDragging && !mouseEvent.modifiers.ctrl) {
-        if (maybeRenderable && maybeRenderable.selectable && !maybeRenderable.isDestroyed && maybeRenderable.shouldStartSelection(mouseEvent.x, mouseEvent.y)) {
-          this.startSelection(maybeRenderable, mouseEvent.x, mouseEvent.y);
-          this.dispatchMouseEvent(maybeRenderable, mouseEvent);
+      mouseEvent.y -= this.renderOffset;
+    }
+    this._latestPointer.x = mouseEvent.x;
+    this._latestPointer.y = mouseEvent.y;
+    this._hasPointer = true;
+    this._lastPointerModifiers = mouseEvent.modifiers;
+    if (this._console.visible) {
+      const consoleBounds = this._console.bounds;
+      if (mouseEvent.x >= consoleBounds.x && mouseEvent.x < consoleBounds.x + consoleBounds.width && mouseEvent.y >= consoleBounds.y && mouseEvent.y < consoleBounds.y + consoleBounds.height) {
+        const event2 = new MouseEvent(null, mouseEvent);
+        const handled = this._console.handleMouse(event2);
+        if (handled)
           return true;
-        }
       }
-      if (mouseEvent.type === "drag" && this.currentSelection?.isDragging) {
-        this.updateSelection(maybeRenderable, mouseEvent.x, mouseEvent.y);
-        if (maybeRenderable) {
-          const event2 = new MouseEvent(maybeRenderable, { ...mouseEvent, isDragging: true });
-          maybeRenderable.processMouseEvent(event2);
-        }
-        return true;
-      }
-      if (mouseEvent.type === "up" && this.currentSelection?.isDragging) {
-        if (maybeRenderable) {
-          const event2 = new MouseEvent(maybeRenderable, { ...mouseEvent, isDragging: true });
-          maybeRenderable.processMouseEvent(event2);
-        }
-        this.finishSelection();
-        return true;
-      }
-      if (mouseEvent.type === "down" && mouseEvent.button === 0 && this.currentSelection) {
-        if (mouseEvent.modifiers.ctrl) {
-          this.currentSelection.isDragging = true;
-          this.updateSelection(maybeRenderable, mouseEvent.x, mouseEvent.y);
-          return true;
-        }
-      }
-      if (!sameElement && (mouseEvent.type === "drag" || mouseEvent.type === "move")) {
-        if (this.lastOverRenderable && this.lastOverRenderable !== this.capturedRenderable) {
-          const event2 = new MouseEvent(this.lastOverRenderable, { ...mouseEvent, type: "out" });
-          this.lastOverRenderable.processMouseEvent(event2);
-        }
-        this.lastOverRenderable = maybeRenderable;
-        if (maybeRenderable) {
-          const event2 = new MouseEvent(maybeRenderable, {
-            ...mouseEvent,
-            type: "over",
-            source: this.capturedRenderable
-          });
-          maybeRenderable.processMouseEvent(event2);
-        }
-      }
-      if (this.capturedRenderable && mouseEvent.type !== "up") {
-        const event2 = new MouseEvent(this.capturedRenderable, mouseEvent);
-        this.capturedRenderable.processMouseEvent(event2);
-        return true;
-      }
-      if (this.capturedRenderable && mouseEvent.type === "up") {
-        const event2 = new MouseEvent(this.capturedRenderable, { ...mouseEvent, type: "drag-end" });
-        this.capturedRenderable.processMouseEvent(event2);
-        this.capturedRenderable.processMouseEvent(new MouseEvent(this.capturedRenderable, mouseEvent));
-        if (maybeRenderable) {
-          const event3 = new MouseEvent(maybeRenderable, {
-            ...mouseEvent,
-            type: "drop",
-            source: this.capturedRenderable
-          });
-          maybeRenderable.processMouseEvent(event3);
-        }
-        this.lastOverRenderable = this.capturedRenderable;
-        this.lastOverRenderableNum = this.capturedRenderable.num;
-        this.setCapturedRenderable(undefined);
-        this.requestRender();
-      }
-      let event;
-      if (maybeRenderable) {
-        if (mouseEvent.type === "drag" && mouseEvent.button === 0) {
-          this.setCapturedRenderable(maybeRenderable);
-        } else {
-          this.setCapturedRenderable(undefined);
-        }
-        event = this.dispatchMouseEvent(maybeRenderable, mouseEvent);
-      } else {
-        this.setCapturedRenderable(undefined);
-        this.lastOverRenderable = undefined;
-      }
-      if (!event?.defaultPrevented && mouseEvent.type === "down" && this.currentSelection) {
-        this.clearSelection();
+    }
+    if (mouseEvent.type === "scroll") {
+      const maybeRenderableId2 = this.hitTest(mouseEvent.x, mouseEvent.y);
+      const maybeRenderable2 = Renderable.renderablesByNumber.get(maybeRenderableId2);
+      const fallbackTarget = this._currentFocusedRenderable && !this._currentFocusedRenderable.isDestroyed && this._currentFocusedRenderable.focused ? this._currentFocusedRenderable : null;
+      const scrollTarget = maybeRenderable2 ?? fallbackTarget;
+      if (scrollTarget) {
+        const event2 = new MouseEvent(scrollTarget, mouseEvent);
+        scrollTarget.processMouseEvent(event2);
       }
       return true;
     }
-    return false;
+    const maybeRenderableId = this.hitTest(mouseEvent.x, mouseEvent.y);
+    const sameElement = maybeRenderableId === this.lastOverRenderableNum;
+    this.lastOverRenderableNum = maybeRenderableId;
+    const maybeRenderable = Renderable.renderablesByNumber.get(maybeRenderableId);
+    if (mouseEvent.type === "down" && mouseEvent.button === 0 && !this.currentSelection?.isDragging && !mouseEvent.modifiers.ctrl) {
+      if (maybeRenderable && maybeRenderable.selectable && !maybeRenderable.isDestroyed && maybeRenderable.shouldStartSelection(mouseEvent.x, mouseEvent.y)) {
+        this.startSelection(maybeRenderable, mouseEvent.x, mouseEvent.y);
+        this.dispatchMouseEvent(maybeRenderable, mouseEvent);
+        return true;
+      }
+    }
+    if (mouseEvent.type === "drag" && this.currentSelection?.isDragging) {
+      this.updateSelection(maybeRenderable, mouseEvent.x, mouseEvent.y);
+      if (maybeRenderable) {
+        const event2 = new MouseEvent(maybeRenderable, { ...mouseEvent, isDragging: true });
+        maybeRenderable.processMouseEvent(event2);
+      }
+      return true;
+    }
+    if (mouseEvent.type === "up" && this.currentSelection?.isDragging) {
+      if (maybeRenderable) {
+        const event2 = new MouseEvent(maybeRenderable, { ...mouseEvent, isDragging: true });
+        maybeRenderable.processMouseEvent(event2);
+      }
+      this.finishSelection();
+      return true;
+    }
+    if (mouseEvent.type === "down" && mouseEvent.button === 0 && this.currentSelection) {
+      if (mouseEvent.modifiers.ctrl) {
+        this.currentSelection.isDragging = true;
+        this.updateSelection(maybeRenderable, mouseEvent.x, mouseEvent.y);
+        return true;
+      }
+    }
+    if (!sameElement && (mouseEvent.type === "drag" || mouseEvent.type === "move")) {
+      if (this.lastOverRenderable && this.lastOverRenderable !== this.capturedRenderable) {
+        const event2 = new MouseEvent(this.lastOverRenderable, { ...mouseEvent, type: "out" });
+        this.lastOverRenderable.processMouseEvent(event2);
+      }
+      this.lastOverRenderable = maybeRenderable;
+      if (maybeRenderable) {
+        const event2 = new MouseEvent(maybeRenderable, {
+          ...mouseEvent,
+          type: "over",
+          source: this.capturedRenderable
+        });
+        maybeRenderable.processMouseEvent(event2);
+      }
+    }
+    if (this.capturedRenderable && mouseEvent.type !== "up") {
+      const event2 = new MouseEvent(this.capturedRenderable, mouseEvent);
+      this.capturedRenderable.processMouseEvent(event2);
+      return true;
+    }
+    if (this.capturedRenderable && mouseEvent.type === "up") {
+      const event2 = new MouseEvent(this.capturedRenderable, { ...mouseEvent, type: "drag-end" });
+      this.capturedRenderable.processMouseEvent(event2);
+      this.capturedRenderable.processMouseEvent(new MouseEvent(this.capturedRenderable, mouseEvent));
+      if (maybeRenderable) {
+        const event3 = new MouseEvent(maybeRenderable, {
+          ...mouseEvent,
+          type: "drop",
+          source: this.capturedRenderable
+        });
+        maybeRenderable.processMouseEvent(event3);
+      }
+      this.lastOverRenderable = this.capturedRenderable;
+      this.lastOverRenderableNum = this.capturedRenderable.num;
+      this.setCapturedRenderable(undefined);
+      this.requestRender();
+    }
+    let event;
+    if (maybeRenderable) {
+      if (mouseEvent.type === "drag" && mouseEvent.button === 0) {
+        this.setCapturedRenderable(maybeRenderable);
+      } else {
+        this.setCapturedRenderable(undefined);
+      }
+      event = this.dispatchMouseEvent(maybeRenderable, mouseEvent);
+    } else {
+      this.setCapturedRenderable(undefined);
+      this.lastOverRenderable = undefined;
+    }
+    if (!event?.defaultPrevented && mouseEvent.type === "down" && this.currentSelection) {
+      this.clearSelection();
+    }
+    return true;
   }
   recheckHoverState() {
     if (this._isDestroyed || !this._hasPointer)
@@ -15556,6 +15855,10 @@ Captured output:
       });
       hitRenderable.processMouseEvent(event);
     }
+  }
+  setMousePointer(style) {
+    this._currentMousePointerStyle = style;
+    this.lib.setCursorStyleOptions(this.rendererPtr, { cursor: style });
   }
   hitTest(x, y) {
     return this.lib.checkHit(this.rendererPtr, x, y);
@@ -15699,11 +16002,11 @@ Captured output:
     const lib = resolveRenderLib();
     lib.setCursorPosition(renderer.rendererPtr, x, y, visible);
   }
-  static setCursorStyle(renderer, style, blinking = false, color) {
+  static setCursorStyle(renderer, options) {
     const lib = resolveRenderLib();
-    lib.setCursorStyle(renderer.rendererPtr, style, blinking);
-    if (color) {
-      lib.setCursorColor(renderer.rendererPtr, color);
+    lib.setCursorStyleOptions(renderer.rendererPtr, options);
+    if (options.cursor !== undefined) {
+      renderer._currentMousePointerStyle = options.cursor;
     }
   }
   static setCursorColor(renderer, color) {
@@ -15713,10 +16016,10 @@ Captured output:
   setCursorPosition(x, y, visible = true) {
     this.lib.setCursorPosition(this.rendererPtr, x, y, visible);
   }
-  setCursorStyle(style, blinking = false, color) {
-    this.lib.setCursorStyle(this.rendererPtr, style, blinking);
-    if (color) {
-      this.lib.setCursorColor(this.rendererPtr, color);
+  setCursorStyle(options) {
+    this.lib.setCursorStyleOptions(this.rendererPtr, options);
+    if (options.cursor !== undefined) {
+      this._currentMousePointerStyle = options.cursor;
     }
   }
   setCursorColor(color) {
@@ -16193,6 +16496,7 @@ Captured output:
 
 // node_modules/@opentui/core/index.js
 import { EventEmitter as EventEmitter10 } from "events";
+import { toArrayBuffer as toArrayBuffer5 } from "bun:ffi";
 
 class TextBufferView {
   lib;
@@ -17086,6 +17390,265 @@ class TimelineEngine {
   }
 }
 var engine = new TimelineEngine;
+function toPointer2(value) {
+  if (typeof value === "bigint") {
+    if (value > BigInt(Number.MAX_SAFE_INTEGER)) {
+      throw new Error("Pointer exceeds safe integer range");
+    }
+    return Number(value);
+  }
+  return value;
+}
+function toNumber2(value) {
+  return typeof value === "bigint" ? Number(value) : value;
+}
+
+class NativeSpanFeed {
+  static create(options) {
+    const lib = resolveRenderLib();
+    const streamPtr = lib.createNativeSpanFeed(options);
+    const stream = new NativeSpanFeed(streamPtr);
+    lib.registerNativeSpanFeedStream(streamPtr, stream.eventHandler);
+    const status = lib.attachNativeSpanFeed(streamPtr);
+    if (status !== 0) {
+      lib.unregisterNativeSpanFeedStream(streamPtr);
+      lib.destroyNativeSpanFeed(streamPtr);
+      throw new Error(`Failed to attach stream: ${status}`);
+    }
+    return stream;
+  }
+  static attach(streamPtr, _options) {
+    const lib = resolveRenderLib();
+    const ptr5 = toPointer2(streamPtr);
+    const stream = new NativeSpanFeed(ptr5);
+    lib.registerNativeSpanFeedStream(ptr5, stream.eventHandler);
+    const status = lib.attachNativeSpanFeed(ptr5);
+    if (status !== 0) {
+      lib.unregisterNativeSpanFeedStream(ptr5);
+      throw new Error(`Failed to attach stream: ${status}`);
+    }
+    return stream;
+  }
+  streamPtr;
+  lib = resolveRenderLib();
+  eventHandler;
+  chunkMap = new Map;
+  chunkSizes = new Map;
+  dataHandlers = new Set;
+  errorHandlers = new Set;
+  drainBuffer = null;
+  stateBuffer = null;
+  closed = false;
+  destroyed = false;
+  draining = false;
+  pendingDataAvailable = false;
+  pendingClose = false;
+  closing = false;
+  pendingAsyncHandlers = 0;
+  inCallback = false;
+  closeQueued = false;
+  constructor(streamPtr) {
+    this.streamPtr = streamPtr;
+    this.eventHandler = (eventId, arg0, arg1) => {
+      this.handleEvent(eventId, arg0, arg1);
+    };
+    this.ensureDrainBuffer();
+  }
+  ensureDrainBuffer() {
+    if (this.drainBuffer)
+      return;
+    const capacity = 256;
+    this.drainBuffer = new Uint8Array(capacity * SpanInfoStruct.size);
+  }
+  onData(handler) {
+    this.dataHandlers.add(handler);
+    if (this.pendingDataAvailable) {
+      this.pendingDataAvailable = false;
+      this.drainAll();
+    }
+    return () => this.dataHandlers.delete(handler);
+  }
+  onError(handler) {
+    this.errorHandlers.add(handler);
+    return () => this.errorHandlers.delete(handler);
+  }
+  close() {
+    if (this.destroyed)
+      return;
+    if (this.inCallback || this.draining || this.pendingAsyncHandlers > 0) {
+      this.pendingClose = true;
+      if (!this.closeQueued) {
+        this.closeQueued = true;
+        queueMicrotask(() => {
+          this.closeQueued = false;
+          this.processPendingClose();
+        });
+      }
+      return;
+    }
+    this.performClose();
+  }
+  processPendingClose() {
+    if (!this.pendingClose || this.destroyed)
+      return;
+    if (this.inCallback || this.draining || this.pendingAsyncHandlers > 0)
+      return;
+    this.pendingClose = false;
+    this.performClose();
+  }
+  performClose() {
+    if (this.closing)
+      return;
+    this.closing = true;
+    if (!this.closed) {
+      const status = this.lib.streamClose(this.streamPtr);
+      if (status !== 0) {
+        this.closing = false;
+        return;
+      }
+      this.closed = true;
+    }
+    this.finalizeDestroy();
+  }
+  finalizeDestroy() {
+    if (this.destroyed)
+      return;
+    this.lib.unregisterNativeSpanFeedStream(this.streamPtr);
+    this.lib.destroyNativeSpanFeed(this.streamPtr);
+    this.destroyed = true;
+    this.chunkMap.clear();
+    this.chunkSizes.clear();
+    this.stateBuffer = null;
+    this.drainBuffer = null;
+    this.dataHandlers.clear();
+    this.errorHandlers.clear();
+    this.pendingDataAvailable = false;
+  }
+  handleEvent(eventId, arg0, arg1) {
+    this.inCallback = true;
+    try {
+      switch (eventId) {
+        case 8: {
+          const len = toNumber2(arg1);
+          if (len > 0 && arg0) {
+            const buffer = toArrayBuffer5(arg0, 0, len);
+            this.stateBuffer = new Uint8Array(buffer);
+          }
+          break;
+        }
+        case 7: {
+          if (this.closing)
+            break;
+          if (this.dataHandlers.size === 0) {
+            this.pendingDataAvailable = true;
+            break;
+          }
+          this.drainAll();
+          break;
+        }
+        case 2: {
+          const chunkLen = toNumber2(arg1);
+          if (chunkLen > 0 && arg0) {
+            if (!this.chunkMap.has(arg0)) {
+              const buffer = toArrayBuffer5(arg0, 0, chunkLen);
+              this.chunkMap.set(arg0, buffer);
+            }
+            this.chunkSizes.set(arg0, chunkLen);
+          }
+          break;
+        }
+        case 6: {
+          const code = arg0;
+          for (const handler of this.errorHandlers)
+            handler(code);
+          break;
+        }
+        case 5: {
+          this.closed = true;
+          break;
+        }
+        default:
+          break;
+      }
+    } finally {
+      this.inCallback = false;
+    }
+  }
+  decrementRefcount(chunkIndex) {
+    if (this.stateBuffer && chunkIndex < this.stateBuffer.length) {
+      const prev = this.stateBuffer[chunkIndex];
+      this.stateBuffer[chunkIndex] = prev > 0 ? prev - 1 : 0;
+    }
+  }
+  drainOnce() {
+    if (!this.drainBuffer || this.draining || this.pendingClose)
+      return 0;
+    const capacity = Math.floor(this.drainBuffer.byteLength / SpanInfoStruct.size);
+    if (capacity === 0)
+      return 0;
+    const count = this.lib.streamDrainSpans(this.streamPtr, this.drainBuffer, capacity);
+    if (count === 0)
+      return 0;
+    this.draining = true;
+    const spans = SpanInfoStruct.unpackList(this.drainBuffer.buffer, count);
+    let firstError = null;
+    try {
+      for (const span of spans) {
+        if (span.len === 0)
+          continue;
+        let buffer = this.chunkMap.get(span.chunkPtr);
+        if (!buffer) {
+          const size = this.chunkSizes.get(span.chunkPtr);
+          if (!size)
+            continue;
+          buffer = toArrayBuffer5(span.chunkPtr, 0, size);
+          this.chunkMap.set(span.chunkPtr, buffer);
+        }
+        if (span.offset + span.len > buffer.byteLength)
+          continue;
+        const slice = new Uint8Array(buffer, span.offset, span.len);
+        let asyncResults = null;
+        for (const handler of this.dataHandlers) {
+          try {
+            const result = handler(slice);
+            if (result && typeof result.then === "function") {
+              asyncResults ??= [];
+              asyncResults.push(result);
+            }
+          } catch (e) {
+            firstError ??= e;
+          }
+        }
+        const shouldStopAfterThisSpan = this.pendingClose;
+        if (asyncResults) {
+          const chunkIndex = span.chunkIndex;
+          this.pendingAsyncHandlers += 1;
+          Promise.allSettled(asyncResults).then(() => {
+            this.decrementRefcount(chunkIndex);
+            this.pendingAsyncHandlers -= 1;
+            this.processPendingClose();
+          });
+        } else {
+          this.decrementRefcount(span.chunkIndex);
+        }
+        if (shouldStopAfterThisSpan)
+          break;
+      }
+    } finally {
+      this.draining = false;
+    }
+    if (firstError)
+      throw firstError;
+    return count;
+  }
+  drainAll() {
+    let count = this.drainOnce();
+    while (count > 0) {
+      count = this.drainOnce();
+    }
+  }
+}
+
 class FrameBufferRenderable extends Renderable {
   frameBuffer;
   respectAlpha;
@@ -18796,6 +19359,23 @@ class LineNumberRenderable extends Renderable {
   getLineNumbers() {
     return this._lineNumbers;
   }
+  highlightLines(startLine, endLine, color) {
+    for (let i = startLine;i <= endLine; i++) {
+      this.parseLineColor(i, color);
+    }
+    if (this.gutter) {
+      this.gutter.setLineColors(this._lineColorsGutter, this._lineColorsContent);
+    }
+  }
+  clearHighlightLines(startLine, endLine) {
+    for (let i = startLine;i <= endLine; i++) {
+      this._lineColorsGutter.delete(i);
+      this._lineColorsContent.delete(i);
+    }
+    if (this.gutter) {
+      this.gutter.setLineColors(this._lineColorsGutter, this._lineColorsContent);
+    }
+  }
 }
 
 class Diff {
@@ -20504,6 +21084,30 @@ class DiffRenderable extends Renderable {
       }
     }
   }
+  setLineColor(line, color) {
+    this.leftSide?.setLineColor(line, color);
+    this.rightSide?.setLineColor(line, color);
+  }
+  clearLineColor(line) {
+    this.leftSide?.clearLineColor(line);
+    this.rightSide?.clearLineColor(line);
+  }
+  setLineColors(lineColors) {
+    this.leftSide?.setLineColors(lineColors);
+    this.rightSide?.setLineColors(lineColors);
+  }
+  clearAllLineColors() {
+    this.leftSide?.clearAllLineColors();
+    this.rightSide?.clearAllLineColors();
+  }
+  highlightLines(startLine, endLine, color) {
+    this.leftSide?.highlightLines(startLine, endLine, color);
+    this.rightSide?.highlightLines(startLine, endLine, color);
+  }
+  clearHighlightLines(startLine, endLine) {
+    this.leftSide?.clearHighlightLines(startLine, endLine);
+    this.rightSide?.clearHighlightLines(startLine, endLine);
+  }
 }
 
 class EditBufferRenderable extends Renderable {
@@ -20935,13 +21539,11 @@ class EditBufferRenderable extends Renderable {
     const cursorX = this.x + visualCursor.visualCol + 1;
     const cursorY = this.y + visualCursor.visualRow + 1;
     this._ctx.setCursorPosition(cursorX, cursorY, true);
-    this._ctx.setCursorColor(this._cursorColor);
-    this._ctx.setCursorStyle(this._cursorStyle.style, this._cursorStyle.blinking);
+    this._ctx.setCursorStyle({ ...this._cursorStyle, color: this._cursorColor });
   }
   focus() {
     super.focus();
-    this._ctx.setCursorStyle(this._cursorStyle.style, this._cursorStyle.blinking);
-    this._ctx.setCursorColor(this._cursorColor);
+    this._ctx.setCursorStyle({ ...this._cursorStyle, color: this._cursorColor });
     this.requestRender();
   }
   blur() {
@@ -23097,7 +23699,8 @@ class MarkdownRenderable extends Renderable {
   constructor(ctx, options) {
     super(ctx, {
       ...options,
-      flexDirection: "column"
+      flexDirection: "column",
+      flexShrink: options.flexShrink ?? 0
     });
     this._syntaxStyle = options.syntaxStyle;
     this._conceal = options.conceal ?? this._contentDefaultOptions.conceal;
@@ -23141,8 +23744,7 @@ class MarkdownRenderable extends Renderable {
   set streaming(value) {
     if (this._streaming !== value) {
       this._streaming = value;
-      this.updateBlocks();
-      this.requestRender();
+      this.clearCache();
     }
   }
   getStyle(group) {
@@ -26873,6 +27475,10 @@ function _getParentNode(childNode) {
   if (parent instanceof RootTextNodeRenderable) {
     parent = parent.textParent ?? undefined;
   }
+  const scrollBoxCandidate = parent?.parent?.parent?.parent;
+  if (scrollBoxCandidate instanceof ScrollBoxRenderable && scrollBoxCandidate.content === parent) {
+    parent = scrollBoxCandidate;
+  }
   return parent;
 }
 var {
@@ -28429,8 +29035,6 @@ ${issue.body || ""}`;
           return () => _c$6() ? memo2(() => issueOptions().length === 0)() ? (() => {
             var _el$20 = createElement("box"), _el$21 = createElement("text");
             insertNode(_el$20, _el$21);
-            setProp(_el$20, "paddingLeft", 2);
-            setProp(_el$20, "paddingTop", 2);
             setProp(_el$21, "content", "No todos yet. Press 'n' to create one.");
             effect((_$p) => setProp(_el$21, "fg", colors.textDim, _$p));
             return _el$20;
@@ -28466,8 +29070,6 @@ ${issue.body || ""}`;
           })() : memo2(() => agentTaskOptions().length === 0)() ? (() => {
             var _el$23 = createElement("box"), _el$24 = createElement("text");
             insertNode(_el$23, _el$24);
-            setProp(_el$23, "paddingLeft", 2);
-            setProp(_el$23, "paddingTop", 2);
             setProp(_el$24, "content", "No agent tasks yet. Press 'n' to create one or 'r' to refresh.");
             effect((_$p) => setProp(_el$24, "fg", colors.textDim, _$p));
             return _el$23;
