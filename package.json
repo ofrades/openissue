@@ -1,6 +1,6 @@
 {
   "name": "ideae",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "TUI app for managing GitHub/GitLab issues with slash commands and file references",
   "module": "src/index.tsx",
   "type": "module",
